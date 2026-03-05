@@ -1,9 +1,8 @@
 import 'dart:math' as dartMath;
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:get/get.dart';
+import 'package:vormirex_new/controller/auth_controller.dart';
 import 'package:vormirex_new/utils/app_colour.dart';
-import 'package:vormirex_new/utils/main_screen.dart';
 import 'package:vormirex_new/view/auth/forget_password.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -14,6 +13,9 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
+  // Inject AuthController
+  final AuthController _authController = Get.put(AuthController());
+
   bool _isLogin = true;
 
   // Login controllers
@@ -42,6 +44,8 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
       backgroundColor: AppColors.scaffoldBg,
       body: SafeArea(
@@ -52,7 +56,11 @@ class _AuthScreenState extends State<AuthScreen> {
               const SizedBox(height: 20),
 
               // Vortex Logo
-              const _VortexLogo(),
+              Image.asset(
+                'assets/new_logo.png',
+                height: screenHeight * 0.15,
+                width: screenWidth * 0.3,
+              ),
 
               const SizedBox(height: 18),
 
@@ -104,6 +112,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         onTogglePassword: () => setState(
                           () => _loginPasswordVisible = !_loginPasswordVisible,
                         ),
+                        authController: _authController,
                       )
                     : _SignupForm(
                         key: const ValueKey('signup'),
@@ -122,6 +131,8 @@ class _AuthScreenState extends State<AuthScreen> {
                           () => _signupConfirmPasswordVisible =
                               !_signupConfirmPasswordVisible,
                         ),
+                        authController: _authController,
+                        onSignupSuccess: () => setState(() => _isLogin = true),
                       ),
               ),
             ],
@@ -211,6 +222,7 @@ class _LoginForm extends StatelessWidget {
   final TextEditingController passwordController;
   final bool passwordVisible;
   final VoidCallback onTogglePassword;
+  final AuthController authController;
 
   const _LoginForm({
     super.key,
@@ -218,6 +230,7 @@ class _LoginForm extends StatelessWidget {
     required this.passwordController,
     required this.passwordVisible,
     required this.onTogglePassword,
+    required this.authController,
   });
 
   @override
@@ -255,9 +268,7 @@ class _LoginForm extends StatelessWidget {
         Align(
           alignment: Alignment.centerRight,
           child: GestureDetector(
-            onTap: () {
-              Get.to(ForgotPasswordScreen());
-            },
+            onTap: () => Get.to(() => ForgotPasswordScreen()),
             child: const Text(
               'Forgot Password ?',
               style: TextStyle(
@@ -271,11 +282,17 @@ class _LoginForm extends StatelessWidget {
 
         const SizedBox(height: 28),
 
-        // Log In button
-       _PrimaryButton(
-  label: 'Log In',
-  onTap: () => Get.off(() => const MainScreen()),
-),
+        // Log In button — shows loader while API call is in progress
+        Obx(
+          () => _PrimaryButton(
+            label: 'Log In',
+            isLoading: authController.isLoading.value,
+            onTap: () => authController.login(
+              email: emailController.text,
+              password: passwordController.text,
+            ),
+          ),
+        ),
 
         const SizedBox(height: 24),
 
@@ -302,6 +319,8 @@ class _SignupForm extends StatelessWidget {
   final bool confirmPasswordVisible;
   final VoidCallback onTogglePassword;
   final VoidCallback onToggleConfirmPassword;
+  final AuthController authController;
+  final VoidCallback onSignupSuccess;
 
   const _SignupForm({
     super.key,
@@ -313,6 +332,8 @@ class _SignupForm extends StatelessWidget {
     required this.confirmPasswordVisible,
     required this.onTogglePassword,
     required this.onToggleConfirmPassword,
+    required this.authController,
+    required this.onSignupSuccess,
   });
 
   @override
@@ -325,6 +346,7 @@ class _SignupForm extends StatelessWidget {
         _InputField(
           controller: nameController,
           hint: 'Enter your name',
+          prefixIcon: Icons.person_outline,
           keyboardType: TextInputType.name,
         ),
 
@@ -371,7 +393,25 @@ class _SignupForm extends StatelessWidget {
 
         const SizedBox(height: 28),
 
-        _PrimaryButton(label: 'Create Account', onTap: () {}),
+        // Create Account button — shows loader while API call is in progress
+        Obx(
+          () => _PrimaryButton(
+            label: 'Create Account',
+            isLoading: authController.isLoading.value,
+            onTap: () async {
+              await authController.signup(
+                name: nameController.text,
+                email: emailController.text,
+                password: passwordController.text,
+                confirmPassword: confirmPasswordController.text,
+              );
+              // Switch to login tab on success (no error means success)
+              if (!authController.isLoading.value) {
+                onSignupSuccess();
+              }
+            },
+          ),
+        ),
 
         const SizedBox(height: 24),
 
@@ -469,8 +509,13 @@ class _InputField extends StatelessWidget {
 class _PrimaryButton extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
+  final bool isLoading;
 
-  const _PrimaryButton({required this.label, required this.onTap});
+  const _PrimaryButton({
+    required this.label,
+    required this.onTap,
+    this.isLoading = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -478,30 +523,44 @@ class _PrimaryButton extends StatelessWidget {
       width: double.infinity,
       height: 56,
       child: ElevatedButton(
-        onPressed: onTap,
+        onPressed: isLoading ? null : onTap,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.accentCyan,
           foregroundColor: Colors.black,
+          disabledBackgroundColor: AppColors.accentCyan.withOpacity(0.6),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(32),
           ),
           elevation: 0,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-                color: Colors.black,
+        child: isLoading
+            ? const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  color: Colors.black,
+                  strokeWidth: 2.5,
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  const Icon(
+                    Icons.arrow_forward,
+                    color: Colors.black,
+                    size: 18,
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(width: 8),
-            const Icon(Icons.arrow_forward, color: Colors.black, size: 18),
-          ],
-        ),
       ),
     );
   }
@@ -548,7 +607,6 @@ class _GoogleButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Google G logo
             _GoogleIcon(),
             const SizedBox(width: 10),
             const Text(
@@ -585,12 +643,11 @@ class _GoogleIconPainter extends CustomPainter {
     final r = size.width / 2;
     final paint = Paint()..style = PaintingStyle.fill;
 
-    // Draw 4 colored quadrants of the G
     final colors = [
-      const Color(0xFF4285F4), // blue  - top left
-      const Color(0xFFEA4335), // red   - top right
-      const Color(0xFFFBBC05), // yellow - bottom right
-      const Color(0xFF34A853), // green  - bottom left
+      const Color(0xFF4285F4),
+      const Color(0xFFEA4335),
+      const Color(0xFFFBBC05),
+      const Color(0xFF34A853),
     ];
 
     for (int i = 0; i < 4; i++) {
@@ -604,7 +661,6 @@ class _GoogleIconPainter extends CustomPainter {
       );
     }
 
-    // White center
     canvas.drawCircle(
       Offset(cx, cy),
       r * 0.55,
@@ -614,78 +670,4 @@ class _GoogleIconPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-// ─── Vortex Logo ──────────────────────────────────────────────────────────────
-
-class _VortexLogo extends StatelessWidget {
-  const _VortexLogo();
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 80,
-      height: 80,
-      child: CustomPaint(painter: _VortexPainter()),
-    );
-  }
-}
-
-class _VortexPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-    final center = Offset(cx, cy);
-
-    final glowPaint = Paint()
-      ..style = PaintingStyle.fill
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12)
-      ..color = Colors.white.withOpacity(0.1);
-    canvas.drawCircle(center, 38, glowPaint);
-
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final arms = [
-      _Arm(0.0, 2.9, 5, 36, 4.5),
-      _Arm(1.26, 2.9, 5, 34, 4.0),
-      _Arm(2.51, 2.7, 5, 32, 3.5),
-      _Arm(3.77, 2.6, 5, 29, 3.0),
-      _Arm(5.03, 2.4, 5, 26, 2.5),
-    ];
-
-    for (final arm in arms) {
-      final path = Path();
-      for (int i = 0; i <= 80; i++) {
-        final t = i / 80;
-        final angle = arm.start + t * arm.sweep;
-        final radius = arm.innerR + t * (arm.outerR - arm.innerR);
-        final x = center.dx + radius * dartMath.cos(angle);
-        final y = center.dy + radius * dartMath.sin(angle);
-        i == 0 ? path.moveTo(x, y) : path.lineTo(x, y);
-      }
-      paint
-        ..strokeWidth = arm.width
-        ..color = Colors.white.withOpacity(0.88);
-      canvas.drawPath(path, paint);
-    }
-
-    canvas.drawCircle(
-      center,
-      4,
-      Paint()
-        ..style = PaintingStyle.fill
-        ..color = Colors.white,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class _Arm {
-  final double start, sweep, innerR, outerR, width;
-  const _Arm(this.start, this.sweep, this.innerR, this.outerR, this.width);
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:vormirex_new/controller/auth_controller.dart';
 import 'package:vormirex_new/utils/app_colour.dart';
+import 'package:vormirex_new/utils/main_screen.dart';
 import 'package:vormirex_new/view/onboarding_first_screen.dart';
-
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -11,6 +13,9 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  // Put controller here so onInit() loads prefs immediately
+  final AuthController _authController = Get.put(AuthController());
+
   @override
   void initState() {
     super.initState();
@@ -21,11 +26,15 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(const Duration(seconds: 3));
     if (!mounted) return;
 
-    
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const OnboardingFirstScreen()),
-    );
+    final bool loggedIn = await _authController.isLoggedIn();
+
+    if (loggedIn) {
+      // Token exists → go straight to Home
+      Get.offAll(() => const MainScreen());
+    } else {
+      // No token → show Onboarding
+      Get.offAll(() => const OnboardingFirstScreen());
+    }
   }
 
   @override

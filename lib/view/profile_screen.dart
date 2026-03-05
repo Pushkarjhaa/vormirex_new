@@ -1,7 +1,7 @@
 import 'dart:math' as dartMath;
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:get/get.dart';
+import 'package:vormirex_new/controller/auth_controller.dart';
 import 'package:vormirex_new/utils/app_colour.dart';
 import 'package:vormirex_new/utils/widget.dart';
 import 'package:vormirex_new/view/edit_profile_screen.dart';
@@ -11,6 +11,9 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Find the already-injected AuthController
+    final AuthController authController = Get.find<AuthController>();
+
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -57,20 +60,30 @@ class ProfileScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'User Name',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
+                            // ── User Name from SharedPreferences ──
+                            Obx(
+                              () => Text(
+                                authController.userName.value.isNotEmpty
+                                    ? authController.userName.value
+                                    : 'User Name',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                             ),
                             const SizedBox(height: 3),
-                            Text(
-                              'user@gmail.com',
-                              style: TextStyle(
-                                color: Colors.white54,
-                                fontSize: 13,
+                            // ── User Email from SharedPreferences ──
+                            Obx(
+                              () => Text(
+                                authController.userEmail.value.isNotEmpty
+                                    ? authController.userEmail.value
+                                    : 'user@gmail.com',
+                                style: const TextStyle(
+                                  color: Colors.white54,
+                                  fontSize: 13,
+                                ),
                               ),
                             ),
                           ],
@@ -78,7 +91,7 @@ class ProfileScreen extends StatelessWidget {
                       ),
                       GestureDetector(
                         onTap: () {
-                          Get.to(EditProfileScreen());
+                          Get.to(() => EditProfileScreen());
                         },
                         child: const Icon(
                           Icons.edit_outlined,
@@ -240,32 +253,35 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 12),
 
             // Log Out
-            AppCard(
-              child: Row(
-                children: [
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(10),
+            GestureDetector(
+              onTap: () => authController.logout(),
+              child: AppCard(
+                child: Row(
+                  children: [
+                    Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.logout,
+                        color: Colors.red,
+                        size: 20,
+                      ),
                     ),
-                    child: const Icon(
-                      Icons.logout,
-                      color: Colors.red,
-                      size: 20,
+                    const SizedBox(width: 14),
+                    const Text(
+                      'Log Out',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 14),
-                  const Text(
-                    'Log Out',
-                    style: TextStyle(
-                      color: Colors.red,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
 
@@ -276,6 +292,8 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 }
+
+// ─── Stat Card ────────────────────────────────────────────────────────────────
 
 class _StatCard extends StatelessWidget {
   final IconData icon;
@@ -307,6 +325,8 @@ class _StatCard extends StatelessWidget {
   }
 }
 
+// ─── Subject Chip ─────────────────────────────────────────────────────────────
+
 class _SubjectChip extends StatelessWidget {
   final String label;
   const _SubjectChip(this.label);
@@ -326,6 +346,8 @@ class _SubjectChip extends StatelessWidget {
     );
   }
 }
+
+// ─── Settings Tile ────────────────────────────────────────────────────────────
 
 class _SettingsTile extends StatelessWidget {
   final IconData icon;
@@ -380,6 +402,8 @@ class _SettingsTile extends StatelessWidget {
     );
   }
 }
+
+// ─── Mini Vortex ──────────────────────────────────────────────────────────────
 
 class _MiniVortex extends StatelessWidget {
   const _MiniVortex();
