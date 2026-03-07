@@ -54,7 +54,7 @@ class AuthController extends GetxController {
       );
 
       final data = jsonDecode(response.body);
-
+      print(data);
       if (response.statusCode == 200 && data['success'] == true) {
         // ── Save to SharedPreferences ──
         final prefs = await SharedPreferences.getInstance();
