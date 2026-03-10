@@ -138,7 +138,11 @@ class HomeScreen extends StatelessWidget {
                     width: double.infinity,
                     height: 44,
                     child: ElevatedButton(
-                      onPressed: () => Get.to(() => const CourseDetailScreen()),
+                      onPressed: () => Get.to(
+                        () => const CourseDetailScreen(
+                          courseId: '698f1085ac5708b0b97a9ece',
+                        ),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.accentCyan,
                         shape: RoundedRectangleBorder(
@@ -213,7 +217,11 @@ class HomeScreen extends StatelessWidget {
               (c) => Padding(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: GestureDetector(
-                  onTap: () => Get.to(() => const CourseDetailScreen()),
+                  onTap: () => Get.to(
+                    () => const CourseDetailScreen(
+                      courseId: '698f1085ac5708b0b97a9ece',
+                    ),
+                  ),
                   child: CourseCard(course: c),
                 ),
               ),

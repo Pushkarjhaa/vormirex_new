@@ -244,8 +244,7 @@ class _CoursesScreenState extends State<CoursesScreen> {
       itemBuilder: (_, i) {
         final course = c.filteredCourses[i];
         return GestureDetector(
-          onTap: () =>
-              Get.to(() => const CourseDetailScreen(), arguments: course),
+          onTap: () => Get.to(() => CourseDetailScreen(courseId: course.id)),
           child: _CourseCard(course: course),
         );
       },

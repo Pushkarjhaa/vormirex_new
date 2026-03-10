@@ -182,7 +182,11 @@ class _PaymentSuccessfulScreenState extends State<PaymentSuccessfulScreen>
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () => Get.to(() => const CourseDetailScreen()),
+                  onPressed: () => Get.to(
+                    () => const CourseDetailScreen(
+                      courseId: '698f1085ac5708b0b97a9ece',
+                    ),
+                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.accentCyan,
                     shape: RoundedRectangleBorder(

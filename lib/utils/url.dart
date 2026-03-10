@@ -10,4 +10,7 @@ class ApiUrls {
 
   // Courses
   static const String courses = '$baseUrl/courses';
+
+  // Course Detail
+  static String courseDetail(String courseId) => '$baseUrl/courses/$courseId';
 }
