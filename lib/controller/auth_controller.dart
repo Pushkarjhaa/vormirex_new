@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vormirex_new/utils/main_screen.dart';
 import 'package:vormirex_new/utils/url.dart';
+import 'package:vormirex_new/view/auth/auth_screen.dart';
 
 class AuthController extends GetxController {
   // ─── Observables ────────────────────────────────────────────────────────────
@@ -165,7 +166,22 @@ class AuthController extends GetxController {
     userId.value = '';
     userRole.value = '';
 
-    Get.offAllNamed('/auth');
+    Get.offAll(() => const AuthScreen());
+
+    // ✅ Show snackbar after navigation so it renders on AuthScreen
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Get.snackbar(
+        'Logged Out',
+        'You have been logged out successfully.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: const Color(0xFF1A4A42),
+        colorText: Colors.white,
+        borderRadius: 12,
+        margin: const EdgeInsets.all(16),
+        duration: const Duration(seconds: 3),
+        icon: const Icon(Icons.check_circle_outline, color: Colors.white),
+      );
+    });
   }
 
   // ─── Token Helpers ───────────────────────────────────────────────────────────

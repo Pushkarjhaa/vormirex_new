@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:vormirex_new/controller/auth_controller.dart';
 import 'package:vormirex_new/utils/app_colour.dart';
 import 'package:vormirex_new/utils/widget.dart';
 import 'package:vormirex_new/view/course_detail_screen.dart';
@@ -7,26 +8,42 @@ import 'package:vormirex_new/view/course_detail_screen.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
+  // ── Time-based greeting ──────────────────────────────────────────────────
+  String _getGreeting() {
+    final hour = DateTime.now().hour; // device local time
+    if (hour < 12) return 'Good Morning,';
+    if (hour < 17) return 'Good Afternoon,';
+    return 'Good Evening,';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final AuthController authController = Get.find<AuthController>();
+
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Greeting
+            // ── Greeting ───────────────────────────────────────────────────
             Text(
-              'Good morning,',
-              style: TextStyle(color: Colors.white54, fontSize: 14),
+              _getGreeting(),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
+              ),
             ),
             const SizedBox(height: 4),
-            const Text(
-              'Welcome back, User!',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
+            Obx(
+              () => Text(
+                'Welcome, ${authController.userName.value.isNotEmpty ? authController.userName.value : 'User'}!',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
 
@@ -190,7 +207,6 @@ class HomeScreen extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            // Course cards — tap navigates to CourseDetailScreen
             ...[
               CourseData(
                 'Python Fundamentals',
