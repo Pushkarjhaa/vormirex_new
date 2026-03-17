@@ -150,7 +150,7 @@ class ProfileScreen extends StatelessWidget {
                       color: const Color(0xFF0D3330),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Center(child: _MiniVortex()),
+                    child: Image.asset('assets/new_logo.png'),
                   ),
                   const SizedBox(width: 14),
                   Expanded(

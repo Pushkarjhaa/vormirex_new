@@ -47,8 +47,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.chevron_left,
-                        color: Colors.white, size: 28),
+                    child: const Icon(
+                      Icons.chevron_left,
+                      color: Colors.white,
+                      size: 28,
+                    ),
                   ),
                   const Expanded(
                     child: Text(
@@ -72,7 +75,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 20, vertical: 20),
+                  horizontal: 20,
+                  vertical: 20,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -93,19 +98,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       border: Border.all(
-                                          color: AppColors.accentCyan,
-                                          width: 2.5),
+                                        color: AppColors.accentCyan,
+                                        width: 2.5,
+                                      ),
                                     ),
                                     child: ClipOval(
                                       child: Image.asset(
                                         'assets/profile_photo.png',
                                         fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) =>
-                                            Container(
+                                        errorBuilder: (_, __, ___) => Container(
                                           color: const Color(0xFF0D3330),
-                                          child: Icon(Icons.person,
-                                              color: AppColors.accentCyan,
-                                              size: 40),
+                                          child: Icon(
+                                            Icons.person,
+                                            color: AppColors.accentCyan,
+                                            size: 40,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -121,11 +128,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                         color: AppColors.accentCyan,
                                         shape: BoxShape.circle,
                                         border: Border.all(
-                                            color: AppColors.scaffoldBg,
-                                            width: 2),
+                                          color: AppColors.scaffoldBg,
+                                          width: 2,
+                                        ),
                                       ),
-                                      child: const Icon(Icons.camera_alt,
-                                          color: Colors.black, size: 13),
+                                      child: const Icon(
+                                        Icons.camera_alt,
+                                        color: Colors.black,
+                                        size: 13,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -134,35 +145,39 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               // Progress alongside avatar
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text('Profile Completion',
-                                            style: TextStyle(
-                                                color: Colors.white54,
-                                                fontSize: 12)),
-                                        Text('75%',
-                                            style: TextStyle(
-                                                color: AppColors.accentCyan,
-                                                fontSize: 13,
-                                                fontWeight:
-                                                    FontWeight.w600)),
+                                        Text(
+                                          'Profile Completion',
+                                          style: TextStyle(
+                                            color: Colors.white54,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                        Text(
+                                          '75%',
+                                          style: TextStyle(
+                                            color: AppColors.accentCyan,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                     const SizedBox(height: 8),
                                     ClipRRect(
-                                      borderRadius:
-                                          BorderRadius.circular(6),
+                                      borderRadius: BorderRadius.circular(6),
                                       child: LinearProgressIndicator(
                                         value: 0.75,
                                         backgroundColor: Colors.white12,
                                         valueColor:
                                             const AlwaysStoppedAnimation(
-                                                AppColors.accentCyan),
+                                              AppColors.accentCyan,
+                                            ),
                                         minHeight: 8,
                                       ),
                                     ),
@@ -215,35 +230,41 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(children: [
-                            Container(
-                              width: 52,
-                              height: 52,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF0D3330),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Center(child: _MiniVortex()),
-                            ),
-                            const SizedBox(width: 14),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text('AI Personalization',
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w700)),
-                                const SizedBox(height: 3),
-                                Text(
-                                  'Learning style: Visual & Interactive',
-                                  style: TextStyle(
-                                      color: Colors.white54,
-                                      fontSize: 12),
+                          Row(
+                            children: [
+                              Container(
+                                width: 52,
+                                height: 52,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0D3330),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                              ],
-                            ),
-                          ]),
+                                child: Image.asset('assets/new_logo.png'),
+                              ),
+                              const SizedBox(width: 14),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'AI Personalization',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    'Learning style: Visual & Interactive',
+                                    style: TextStyle(
+                                      color: Colors.white54,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
 
                           const SizedBox(height: 14),
 
@@ -252,8 +273,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             runSpacing: 8,
                             children: _subjects.map((s) {
                               final isActive = s == 'Mathematics';
-                              return _SubjectChip(
-                                  label: s, isActive: isActive);
+                              return _SubjectChip(label: s, isActive: isActive);
                             }).toList(),
                           ),
                         ],
@@ -304,7 +324,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.accentCyan,
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(32)),
+                          borderRadius: BorderRadius.circular(32),
+                        ),
                         elevation: 0,
                       ),
                       child: const Text(
@@ -329,7 +350,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.cardBg,
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(32)),
+                          borderRadius: BorderRadius.circular(32),
+                        ),
                         elevation: 0,
                       ),
                       child: const Text(
@@ -424,8 +446,10 @@ class _EditField extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
           ),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
         ),
       ),
     );
@@ -483,35 +507,41 @@ class _ActionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Row(children: [
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: Colors.white10,
-            borderRadius: BorderRadius.circular(10),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.white10,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: Colors.white60, size: 20),
           ),
-          child: Icon(icon, color: Colors.white60, size: 20),
-        ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title,
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
                   style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600)),
-              const SizedBox(height: 3),
-              Text(subtitle,
-                  style:
-                      const TextStyle(color: Colors.white38, fontSize: 12)),
-            ],
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  subtitle,
+                  style: const TextStyle(color: Colors.white38, fontSize: 12),
+                ),
+              ],
+            ),
           ),
-        ),
-        const Icon(Icons.chevron_right, color: Colors.white38, size: 20),
-      ]),
+          const Icon(Icons.chevron_right, color: Colors.white38, size: 20),
+        ],
+      ),
     );
   }
 }
