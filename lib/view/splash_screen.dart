@@ -13,7 +13,6 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  // Put controller here so onInit() loads prefs immediately
   final AuthController _authController = Get.put(AuthController());
 
   @override
@@ -29,10 +28,8 @@ class _SplashScreenState extends State<SplashScreen> {
     final bool loggedIn = await _authController.isLoggedIn();
 
     if (loggedIn) {
-      // Token exists → go straight to Home
       Get.offAll(() => const MainScreen());
     } else {
-      // No token → show Onboarding
       Get.offAll(() => const OnboardingFirstScreen());
     }
   }
@@ -47,17 +44,26 @@ class _SplashScreenState extends State<SplashScreen> {
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // Logo image
-            Image.asset(
-              'assets/new_logo.png',
-              height: screenHeight * 0.25,
-              width: screenWidth * 0.5,
+            // ClipRect trims the transparent bottom padding of the PNG
+            ClipRect(
+              child: Align(
+                alignment: Alignment.topCenter,
+                // heightFactor controls how much of the image height is kept.
+                // Lower value = more bottom whitespace cropped.
+                // Adjust between 0.6 – 0.85 to taste.
+                heightFactor: 0.70,
+                child: Image.asset(
+                  'assets/new_logo.png',
+                  height: screenHeight * 0.25,
+                  width: screenWidth * 0.5,
+                  fit: BoxFit.contain,
+                ),
+              ),
             ),
-
-            const SizedBox(height: 16),
-
-            // App name
+            const SizedBox(height: 20),
+            // App name — sits tight below the logo
             const Text(
               'VORMIREX',
               textAlign: TextAlign.center,
