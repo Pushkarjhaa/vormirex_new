@@ -1,5 +1,9 @@
+import 'dart:io';
 import 'dart:math' as dartMath;
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:vormirex_new/controller/profile_controller.dart';
 import 'package:vormirex_new/utils/app_colour.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -10,9 +14,11 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
-  final _nameController = TextEditingController(text: 'User Name');
-  final _emailController = TextEditingController(text: 'username@email.com');
-  final _phoneController = TextEditingController(text: '+91 9876543210');
+  late final TextEditingController _nameController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _phoneController;
+
+  late final ProfileController _profileController;
 
   final List<String> _subjects = [
     'Coding',
@@ -26,11 +32,121 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+
+    // Ensure ProfileController is registered
+    if (!Get.isRegistered<ProfileController>()) {
+      Get.put(ProfileController());
+    }
+    _profileController = Get.find<ProfileController>();
+
+    // Pre-fill text fields with data already fetched by ProfileController
+    _nameController = TextEditingController(
+      text: _profileController.name.value,
+    );
+    _emailController = TextEditingController(
+      text: _profileController.email.value,
+    );
+    _phoneController = TextEditingController(
+      text: _profileController.phoneNumber.value,
+    );
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
     super.dispose();
+  }
+
+  // ── Pick image and upload ─────────────────────────────────────────────────
+  Future<void> _pickAndUploadPhoto() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+      maxWidth: 800,
+    );
+
+    if (picked == null) return; // user cancelled
+
+    await _profileController.uploadProfilePhoto(
+      imageFile: File(picked.path),
+      onSuccess: (message) {
+        Get.snackbar(
+          'Success ✓',
+          message,
+          backgroundColor: AppColors.accentCyan.withOpacity(0.15),
+          colorText: AppColors.accentCyan,
+          snackPosition: SnackPosition.BOTTOM,
+          margin: const EdgeInsets.all(16),
+          borderRadius: 12,
+          duration: const Duration(seconds: 3),
+        );
+      },
+      onError: (message) {
+        Get.snackbar(
+          'Error',
+          message,
+          backgroundColor: Colors.red.withOpacity(0.15),
+          colorText: Colors.red,
+          snackPosition: SnackPosition.BOTTOM,
+          margin: const EdgeInsets.all(16),
+          borderRadius: 12,
+        );
+      },
+    );
+  }
+
+  // ── Save profile text fields ──────────────────────────────────────────────
+  Future<void> _saveChanges() async {
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final phone = _phoneController.text.trim();
+
+    if (name.isEmpty || email.isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Name and email cannot be empty.',
+        backgroundColor: Colors.red.withOpacity(0.15),
+        colorText: Colors.red,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(16),
+        borderRadius: 12,
+      );
+      return;
+    }
+
+    await _profileController.updateProfile(
+      newName: name,
+      newPhone: phone,
+      onSuccess: (message) {
+        Get.snackbar(
+          'Success ✓',
+          message,
+          backgroundColor: AppColors.accentCyan.withOpacity(0.15),
+          colorText: AppColors.accentCyan,
+          snackPosition: SnackPosition.BOTTOM,
+          margin: const EdgeInsets.all(16),
+          borderRadius: 12,
+          duration: const Duration(seconds: 3),
+        );
+        Navigator.pop(context);
+      },
+      onError: (message) {
+        Get.snackbar(
+          'Error',
+          message,
+          backgroundColor: Colors.red.withOpacity(0.15),
+          colorText: Colors.red,
+          snackPosition: SnackPosition.BOTTOM,
+          margin: const EdgeInsets.all(16),
+          borderRadius: 12,
+        );
+      },
+    );
   }
 
   @override
@@ -86,61 +202,96 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Avatar row — left aligned
+                          // Avatar row
                           Row(
                             children: [
-                              Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  Container(
-                                    width: 80,
-                                    height: 80,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: AppColors.accentCyan,
-                                        width: 2.5,
+                              Obx(() {
+                                final photoUrl =
+                                    _profileController.profilePhotoUrl.value;
+                                final isUploading =
+                                    _profileController.isSaving.value;
+
+                                return Stack(
+                                  clipBehavior: Clip.none,
+                                  children: [
+                                    // ── Avatar circle ──
+                                    Container(
+                                      width: 80,
+                                      height: 80,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: AppColors.accentCyan,
+                                          width: 2.5,
+                                        ),
+                                      ),
+                                      child: ClipOval(
+                                        child: photoUrl.isNotEmpty
+                                            ? Image.network(
+                                                photoUrl,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (_, __, ___) =>
+                                                    _fallbackAvatar(),
+                                              )
+                                            : Image.asset(
+                                                'assets/profile_photo.png',
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (_, __, ___) =>
+                                                    _fallbackAvatar(),
+                                              ),
                                       ),
                                     ),
-                                    child: ClipOval(
-                                      child: Image.asset(
-                                        'assets/profile_photo.png',
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) => Container(
-                                          color: const Color(0xFF0D3330),
-                                          child: Icon(
-                                            Icons.person,
-                                            color: AppColors.accentCyan,
-                                            size: 40,
+
+                                    // ── Upload spinner overlay ──
+                                    if (isUploading)
+                                      Positioned.fill(
+                                        child: ClipOval(
+                                          child: Container(
+                                            color: Colors.black.withOpacity(
+                                              0.55,
+                                            ),
+                                            child: const Center(
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                    // ── Camera badge ──
+                                    Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      child: GestureDetector(
+                                        onTap: isUploading
+                                            ? null
+                                            : _pickAndUploadPhoto,
+                                        child: Container(
+                                          width: 26,
+                                          height: 26,
+                                          decoration: BoxDecoration(
+                                            color: isUploading
+                                                ? Colors.grey
+                                                : AppColors.accentCyan,
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: AppColors.scaffoldBg,
+                                              width: 2,
+                                            ),
+                                          ),
+                                          child: const Icon(
+                                            Icons.camera_alt,
+                                            color: Colors.black,
+                                            size: 13,
                                           ),
                                         ),
                                       ),
                                     ),
-                                  ),
-                                  // Camera badge
-                                  Positioned(
-                                    bottom: 0,
-                                    right: 0,
-                                    child: Container(
-                                      width: 26,
-                                      height: 26,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.accentCyan,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: AppColors.scaffoldBg,
-                                          width: 2,
-                                        ),
-                                      ),
-                                      child: const Icon(
-                                        Icons.camera_alt,
-                                        color: Colors.black,
-                                        size: 13,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                  ],
+                                );
+                              }),
                               const SizedBox(width: 16),
                               // Progress alongside avatar
                               Expanded(
@@ -151,7 +302,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Text(
+                                        const Text(
                                           'Profile Completion',
                                           style: TextStyle(
                                             color: Colors.white54,
@@ -171,11 +322,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                     const SizedBox(height: 8),
                                     ClipRRect(
                                       borderRadius: BorderRadius.circular(6),
-                                      child: LinearProgressIndicator(
+                                      child: const LinearProgressIndicator(
                                         value: 0.75,
                                         backgroundColor: Colors.white12,
                                         valueColor:
-                                            const AlwaysStoppedAnimation(
+                                            AlwaysStoppedAnimation<Color>(
                                               AppColors.accentCyan,
                                             ),
                                         minHeight: 8,
@@ -190,7 +341,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           const SizedBox(height: 24),
 
                           // Full Name
-                          _FieldLabel('FULL NAME'),
+                          const _FieldLabel('FULL NAME'),
                           const SizedBox(height: 8),
                           _EditField(
                             controller: _nameController,
@@ -200,19 +351,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                           const SizedBox(height: 16),
 
-                          // Email
-                          _FieldLabel('EMAIL ADDRESS'),
+                          // Email (read-only — cannot be changed)
+                          const _FieldLabel('EMAIL ADDRESS'),
                           const SizedBox(height: 8),
                           _EditField(
                             controller: _emailController,
                             prefixIcon: Icons.email_outlined,
                             keyboardType: TextInputType.emailAddress,
+                            readOnly: true,
                           ),
 
                           const SizedBox(height: 16),
 
                           // Phone
-                          _FieldLabel('PHONE NUMBER'),
+                          const _FieldLabel('PHONE NUMBER'),
                           const SizedBox(height: 8),
                           _EditField(
                             controller: _phoneController,
@@ -242,10 +394,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                 child: Image.asset('assets/new_logo.png'),
                               ),
                               const SizedBox(width: 14),
-                              Column(
+                              const Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
+                                  Text(
                                     'AI Personalization',
                                     style: TextStyle(
                                       color: Colors.white,
@@ -253,7 +405,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
-                                  const SizedBox(height: 3),
+                                  SizedBox(height: 3),
                                   Text(
                                     'Learning style: Visual & Interactive',
                                     style: TextStyle(
@@ -313,58 +465,73 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             // ── Bottom buttons ───────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              child: Column(
-                children: [
-                  // Save Changes
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.accentCyan,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(32),
+              child: Obx(
+                () => Column(
+                  children: [
+                    // Save Changes
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: _profileController.isSaving.value
+                            ? null
+                            : _saveChanges,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.accentCyan,
+                          disabledBackgroundColor: AppColors.accentCyan
+                              .withOpacity(0.4),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(32),
+                          ),
+                          elevation: 0,
                         ),
-                        elevation: 0,
+                        child: _profileController.isSaving.value
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.black,
+                                ),
+                              )
+                            : const Text(
+                                'Save Changes',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                       ),
-                      child: const Text(
-                        'Save Changes',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // Cancel
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.cardBg,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(32),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: const Text(
+                          'Cancel',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // Cancel
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.cardBg,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(32),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: const Text(
-                        'Cancel',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
@@ -372,6 +539,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ),
     );
   }
+
+  Widget _fallbackAvatar() => Container(
+    color: const Color(0xFF0D3330),
+    child: Icon(Icons.person, color: AppColors.accentCyan, size: 40),
+  );
 }
 
 // ─── Section Card ─────────────────────────────────────────────────────────────
@@ -421,27 +593,36 @@ class _EditField extends StatelessWidget {
   final TextEditingController controller;
   final IconData prefixIcon;
   final TextInputType keyboardType;
+  final bool readOnly;
 
   const _EditField({
     required this.controller,
     required this.prefixIcon,
     this.keyboardType = TextInputType.text,
+    this.readOnly = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.scaffoldBg,
+        color: readOnly ? Colors.white.withOpacity(0.03) : AppColors.scaffoldBg,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.white10),
       ),
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
-        style: const TextStyle(color: Colors.white, fontSize: 15),
+        readOnly: readOnly,
+        style: TextStyle(
+          color: readOnly ? Colors.white38 : Colors.white,
+          fontSize: 15,
+        ),
         decoration: InputDecoration(
           prefixIcon: Icon(prefixIcon, color: Colors.white38, size: 20),
+          suffixIcon: readOnly
+              ? const Icon(Icons.lock_outline, color: Colors.white24, size: 16)
+              : null,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
@@ -544,56 +725,4 @@ class _ActionTile extends StatelessWidget {
       ),
     );
   }
-}
-
-// ─── Mini Vortex Logo ─────────────────────────────────────────────────────────
-
-class _MiniVortex extends StatelessWidget {
-  const _MiniVortex();
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 32,
-      height: 32,
-      child: CustomPaint(painter: _MiniVortexPainter()),
-    );
-  }
-}
-
-class _MiniVortexPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-    final center = Offset(cx, cy);
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final arms = [
-      [0.0, 2.9, 2.0, 14.0, 2.0],
-      [1.26, 2.9, 2.0, 13.0, 1.8],
-      [2.51, 2.7, 2.0, 12.0, 1.5],
-    ];
-
-    for (final arm in arms) {
-      final path = Path();
-      for (int i = 0; i <= 40; i++) {
-        final t = i / 40;
-        final angle = arm[0] + t * arm[1];
-        final radius = arm[2] + t * (arm[3] - arm[2]);
-        final x = center.dx + radius * dartMath.cos(angle);
-        final y = center.dy + radius * dartMath.sin(angle);
-        i == 0 ? path.moveTo(x, y) : path.lineTo(x, y);
-      }
-      paint
-        ..strokeWidth = arm[4]
-        ..color = Colors.white.withOpacity(0.85);
-      canvas.drawPath(path, paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

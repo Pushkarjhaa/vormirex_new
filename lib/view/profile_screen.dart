@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:vormirex_new/controller/auth_controller.dart';
 import 'package:vormirex_new/controller/change_password_controller.dart';
+import 'package:vormirex_new/controller/profile_controller.dart';
 import 'package:vormirex_new/utils/app_colour.dart';
 import 'package:vormirex_new/utils/widget.dart';
 import 'package:vormirex_new/view/edit_profile_screen.dart';
@@ -23,6 +24,12 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final AuthController authController = Get.find<AuthController>();
 
+    // Ensure ProfileController is registered
+    if (!Get.isRegistered<ProfileController>()) {
+      Get.put(ProfileController());
+    }
+    final ProfileController profileController = Get.find<ProfileController>();
+
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -37,15 +44,25 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       Stack(
                         children: [
-                          CircleAvatar(
-                            radius: 32,
-                            backgroundColor: const Color(0xFF0D3330),
-                            child: Icon(
-                              Icons.person,
-                              color: AppColors.accentCyan,
-                              size: 36,
-                            ),
-                          ),
+                          // ── Avatar: shows network photo if available ──
+                          Obx(() {
+                            final photoUrl =
+                                profileController.profilePhotoUrl.value;
+                            return CircleAvatar(
+                              radius: 32,
+                              backgroundColor: const Color(0xFF0D3330),
+                              backgroundImage: photoUrl.isNotEmpty
+                                  ? NetworkImage(photoUrl)
+                                  : null,
+                              child: photoUrl.isEmpty
+                                  ? Icon(
+                                      Icons.person,
+                                      color: AppColors.accentCyan,
+                                      size: 36,
+                                    )
+                                  : null,
+                            );
+                          }),
                           Positioned(
                             bottom: 2,
                             right: 2,
@@ -69,9 +86,12 @@ class ProfileScreen extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // ── Name ──
                             Obx(
                               () => Text(
-                                authController.userName.value.isNotEmpty
+                                profileController.name.value.isNotEmpty
+                                    ? profileController.name.value
+                                    : authController.userName.value.isNotEmpty
                                     ? authController.userName.value
                                     : 'User Name',
                                 style: const TextStyle(
@@ -82,9 +102,12 @@ class ProfileScreen extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 3),
+                            // ── Email ──
                             Obx(
                               () => Text(
-                                authController.userEmail.value.isNotEmpty
+                                profileController.email.value.isNotEmpty
+                                    ? profileController.email.value
+                                    : authController.userEmail.value.isNotEmpty
                                     ? authController.userEmail.value
                                     : 'user@gmail.com',
                                 style: const TextStyle(
@@ -97,7 +120,7 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                       GestureDetector(
-                        onTap: () => Get.to(() => EditProfileScreen()),
+                        onTap: () => Get.to(() => const EditProfileScreen()),
                         child: const Icon(
                           Icons.edit_outlined,
                           color: Colors.white38,
@@ -352,9 +375,7 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
-// ─── Change Password Sheet (StatefulWidget) ───────────────────────────────────
-// Using StatefulWidget so TextEditingControllers are managed by Flutter,
-// not GetX. This prevents the "used after disposed" crash entirely.
+// ─── Change Password Sheet ────────────────────────────────────────────────────
 
 class _ChangePasswordSheet extends StatefulWidget {
   const _ChangePasswordSheet();
@@ -364,7 +385,6 @@ class _ChangePasswordSheet extends StatefulWidget {
 }
 
 class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
-  // ✅ Owned and disposed by this State — not by GetX
   final _oldCtrl = TextEditingController();
   final _newCtrl = TextEditingController();
   bool _obscureOld = true;
@@ -395,7 +415,6 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
   }
 
   Future<void> _submit() async {
-    // ✅ Read BEFORE any async — widget might unmount during await
     final oldPass = _oldCtrl.text.trim();
     final newPass = _newCtrl.text.trim();
 
@@ -409,9 +428,7 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
       newPassword: newPass,
       onSuccess: (message) {
         if (!mounted) return;
-        // ✅ Close sheet — State is still mounted here
         Navigator.of(context).pop();
-        // ✅ Show snackbar after sheet is gone
         WidgetsBinding.instance.addPostFrameCallback((_) {
           Get.snackbar(
             'Success ✓',
@@ -431,7 +448,6 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
       },
     );
 
-    // Clean up controller after use
     if (Get.isRegistered<ChangePasswordController>()) {
       Get.delete<ChangePasswordController>();
     }
@@ -452,7 +468,6 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ AnimatedPadding responds to keyboard open/close smoothly
     return AnimatedPadding(
       duration: const Duration(milliseconds: 150),
       curve: Curves.easeOut,
@@ -465,7 +480,6 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
           borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           border: Border.all(color: Colors.white10),
         ),
-        // ✅ SingleChildScrollView prevents overflow when keyboard appears
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
           child: Column(
@@ -497,8 +511,6 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
                 style: TextStyle(color: Colors.white38, fontSize: 13),
               ),
               const SizedBox(height: 24),
-
-              // Old Password
               _PasswordField(
                 controller: _oldCtrl,
                 label: 'Old Password',
@@ -506,8 +518,6 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
                 onToggle: () => setState(() => _obscureOld = !_obscureOld),
               ),
               const SizedBox(height: 14),
-
-              // New Password
               _PasswordField(
                 controller: _newCtrl,
                 label: 'New Password',
@@ -515,8 +525,6 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
                 onToggle: () => setState(() => _obscureNew = !_obscureNew),
               ),
               const SizedBox(height: 24),
-
-              // ✅ setState drives the button — no GetX widget needed here
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -721,56 +729,4 @@ class _SettingsTile extends StatelessWidget {
       ),
     );
   }
-}
-
-// ─── Mini Vortex ──────────────────────────────────────────────────────────────
-
-class _MiniVortex extends StatelessWidget {
-  const _MiniVortex();
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 32,
-      height: 32,
-      child: CustomPaint(painter: _MiniVortexPainter()),
-    );
-  }
-}
-
-class _MiniVortexPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-    final center = Offset(cx, cy);
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-
-    final arms = [
-      [0.0, 2.9, 2.0, 14.0, 2.0],
-      [1.26, 2.9, 2.0, 13.0, 1.8],
-      [2.51, 2.7, 2.0, 12.0, 1.5],
-    ];
-
-    for (final arm in arms) {
-      final path = Path();
-      for (int i = 0; i <= 40; i++) {
-        final t = i / 40;
-        final angle = arm[0] + t * arm[1];
-        final radius = arm[2] + t * (arm[3] - arm[2]);
-        final x = center.dx + radius * dartMath.cos(angle);
-        final y = center.dy + radius * dartMath.sin(angle);
-        i == 0 ? path.moveTo(x, y) : path.lineTo(x, y);
-      }
-      paint
-        ..strokeWidth = arm[4]
-        ..color = Colors.white.withOpacity(0.85);
-      canvas.drawPath(path, paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

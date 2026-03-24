@@ -8,23 +8,24 @@ import 'package:vormirex_new/utils/url.dart';
 import 'package:vormirex_new/view/auth/auth_screen.dart';
 
 class AuthController extends GetxController {
-  // ─── Observables ────────────────────────────────────────────────────────────
+  // ─── Observables ─────────────────────────────────────────────────────────
   final RxBool isLoading = false.obs;
 
   // ── Logged-in user info (reactive) ──
+  final RxString token = ''.obs; // ← added so ProfileController can read it
   final RxString userName = ''.obs;
   final RxString userEmail = ''.obs;
   final RxString userId = ''.obs;
   final RxString userRole = ''.obs;
 
-  // ─── SharedPreferences Keys ──────────────────────────────────────────────────
+  // ─── SharedPreferences Keys ──────────────────────────────────────────────
   static const String _tokenKey = 'access_token';
   static const String _userIdKey = 'user_id';
   static const String _userNameKey = 'user_name';
   static const String _userEmailKey = 'user_email';
   static const String _userRoleKey = 'user_role';
 
-  // ─── On Init: load saved user data ──────────────────────────────────────────
+  // ─── On Init: load saved user data ──────────────────────────────────────
   @override
   void onInit() {
     super.onInit();
@@ -33,13 +34,14 @@ class AuthController extends GetxController {
 
   Future<void> _loadUserFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
+    token.value = prefs.getString(_tokenKey) ?? '';
     userName.value = prefs.getString(_userNameKey) ?? '';
     userEmail.value = prefs.getString(_userEmailKey) ?? '';
     userId.value = prefs.getString(_userIdKey) ?? '';
     userRole.value = prefs.getString(_userRoleKey) ?? '';
   }
 
-  // ─── Login ───────────────────────────────────────────────────────────────────
+  // ─── Login ───────────────────────────────────────────────────────────────
   Future<void> login({required String email, required String password}) async {
     if (email.trim().isEmpty || password.trim().isEmpty) {
       _showSnackbar('Error', 'Please fill in all fields.', isError: true);
@@ -56,16 +58,19 @@ class AuthController extends GetxController {
 
       final data = jsonDecode(response.body);
       print(data);
+
       if (response.statusCode == 200 && data['success'] == true) {
-        // ── Save to SharedPreferences ──
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(_tokenKey, data['accessToken'] ?? '');
+
+        final savedToken = data['accessToken'] ?? '';
+        await prefs.setString(_tokenKey, savedToken);
         await prefs.setString(_userIdKey, data['user']['id'] ?? '');
         await prefs.setString(_userNameKey, data['user']['name'] ?? '');
         await prefs.setString(_userEmailKey, data['user']['email'] ?? '');
         await prefs.setString(_userRoleKey, data['user']['role'] ?? '');
 
         // ── Update reactive observables immediately ──
+        token.value = savedToken;
         userName.value = data['user']['name'] ?? '';
         userEmail.value = data['user']['email'] ?? '';
         userId.value = data['user']['id'] ?? '';
@@ -88,7 +93,7 @@ class AuthController extends GetxController {
     }
   }
 
-  // ─── Sign Up ─────────────────────────────────────────────────────────────────
+  // ─── Sign Up ─────────────────────────────────────────────────────────────
   Future<void> signup({
     required String name,
     required String email,
@@ -151,7 +156,7 @@ class AuthController extends GetxController {
     }
   }
 
-  // ─── Logout ──────────────────────────────────────────────────────────────────
+  // ─── Logout ──────────────────────────────────────────────────────────────
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
@@ -160,7 +165,8 @@ class AuthController extends GetxController {
     await prefs.remove(_userEmailKey);
     await prefs.remove(_userRoleKey);
 
-    // Clear observables
+    // Clear all observables including token
+    token.value = '';
     userName.value = '';
     userEmail.value = '';
     userId.value = '';
@@ -168,7 +174,6 @@ class AuthController extends GetxController {
 
     Get.offAll(() => const AuthScreen());
 
-    // ✅ Show snackbar after navigation so it renders on AuthScreen
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Get.snackbar(
         'Logged Out',
@@ -184,18 +189,18 @@ class AuthController extends GetxController {
     });
   }
 
-  // ─── Token Helpers ───────────────────────────────────────────────────────────
+  // ─── Token Helpers ───────────────────────────────────────────────────────
   Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_tokenKey);
   }
 
   Future<bool> isLoggedIn() async {
-    final token = await getToken();
-    return token != null && token.isNotEmpty;
+    final t = await getToken();
+    return t != null && t.isNotEmpty;
   }
 
-  // ─── Snackbar Helper ─────────────────────────────────────────────────────────
+  // ─── Snackbar Helper ─────────────────────────────────────────────────────
   void _showSnackbar(String title, String message, {bool isError = false}) {
     Get.snackbar(
       title,
