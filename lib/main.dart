@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vormirex_new/view/new_home_screen.dart';
 import 'package:vormirex_new/view/splash_screen.dart';
 
 void main() async {
@@ -18,7 +19,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Vormirex',
-      home: const SplashScreen(),
+      home: HomeScreen(),
     );
   }
 }
