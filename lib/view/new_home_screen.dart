@@ -1,140 +1,181 @@
 import 'package:flutter/material.dart';
+import 'package:vormirex_new/utils/app_colour.dart';
+import 'package:vormirex_new/view/ai_tutor_screen.dart';
+import 'package:vormirex_new/view/course_screen.dart';
+import 'package:vormirex_new/view/profile_screen.dart';
+import 'package:vormirex_new/view/progress.screen.dart';
 
-
-
-// ─── Color Palette ───────────────────────────────────────────────────────────
-class AppColors {
-  static const background   = Color(0xFF1A1A1A);
-  static const cardBg       = Color(0xFF232323);
-  static const cardBorder   = Color(0xFF2A3540);
-  static const cyan         = Color(0xFF00FFFF);
-  static const cyanDim      = Color(0x2200FFFF);
-  static const cyanBorder   = Color(0x4400FFFF);
-  static const textPrimary  = Color(0xFFE8F2FA);
-  static const textSecondary= Color(0xFF6B7A8D);
-  static const textMuted    = Color(0xFF3A4A58);
-  static const starColor    = Color(0xFFF4C542);
-  static const beginnerColor= Color(0xFF00FFFF);
+// ─── Color Palette ────────────────────────────────────────────────────────────
+class _C {
+  static const background        = Color(0xFF1A1A1A);
+  static const cardBorder        = Color(0xFF2A3540);
+  static const cyan              = Color(0xFF00FFFF);
+  static const cyanDim           = Color(0x2200FFFF);
+  static const cyanBorder        = Color(0x4400FFFF);
+  static const textPrimary       = Color(0xFFE8F2FA);
+  static const textSecondary     = Color(0xFF6B7A8D);
+  static const textMuted         = Color(0xFF3A4A58);
+  static const starColor         = Color(0xFFF4C542);
+  static const beginnerColor     = Color(0xFF00FFFF);
   static const intermediateColor = Color(0xFFF4A261);
-  static const advancedColor = Color(0xFFE76F51);
+  static const advancedColor     = Color(0xFFE76F51);
+  static const menuBg            = Color(0xFF1E252C);
+  static const darkCard          = Color(0xFF0D1117);
+  static const darkGoal          = Color(0xFF0F1B22);
 }
 
-// ─── Home Screen ─────────────────────────────────────────────────────────────
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+// ─── Nav Destinations ─────────────────────────────────────────────────────────
+enum _Dest { courses, aiTutor, progress, profile }
+
+// ─── New Home Screen (shell) ──────────────────────────────────────────────────
+class NewHomeScreen extends StatefulWidget {
+  const NewHomeScreen({super.key});
+
+  @override
+  State<NewHomeScreen> createState() => _NewHomeScreenState();
+}
+
+class _NewHomeScreenState extends State<NewHomeScreen> {
+  _Dest? _active; // null = home
+
+  void _go(_Dest d) => setState(() => _active = d);
+  void _home()      => setState(() => _active = null);
+
+  Widget _body() {
+    switch (_active) {
+      case _Dest.courses:  return CoursesScreen();
+      case _Dest.aiTutor:  return const AITutorScreen();
+      case _Dest.progress: return const ProgressScreen();
+      case _Dest.profile:  return const ProfileScreen();
+      case null:           return _HomeContent(onNavigate: _go);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 24),
-              // Header
-              _buildHeader(),
-              const SizedBox(height: 20),
-              // Daily Goal Card
-              _buildDailyGoalCard(),
-              const SizedBox(height: 24),
-              // Continue Learning Section
-              _buildSectionTitle('Continue Learning'),
-              const SizedBox(height: 12),
-              _buildContinueLearningCard(),
-              const SizedBox(height: 24),
-              // Recommended Section
-              _buildRecommendedHeader(),
-              const SizedBox(height: 12),
-              _buildCourseCard(
-                title: 'Python Fundamentals',
-                level: 'Beginner',
-                levelColor: AppColors.beginnerColor,
-                hours: '24H',
-                lessons: '48 lessons',
-                rating: '4.9',
-                students: '45.2k students',
-              ),
-              const SizedBox(height: 10),
-              _buildCourseCard(
-                title: 'Python Fundamentals',
-                level: 'Intermediate',
-                levelColor: AppColors.intermediateColor,
-                hours: '6H',
-                lessons: '48 lessons',
-                rating: '4.8',
-                students: '45.2k students',
-              ),
-              const SizedBox(height: 10),
-              _buildCourseCard(
-                title: 'Python Fundamentals',
-                level: 'Advanced',
-                levelColor: AppColors.advancedColor,
-                hours: '24H',
-                lessons: '48 lessons',
-                rating: '4.9',
-                students: '45.2k students',
-              ),
-              const SizedBox(height: 30),
-            ],
-          ),
+    return PopScope(
+      // allow system back only when on home; otherwise pop to home
+      canPop: _active == null,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _home();
+      },
+      child: Scaffold(
+        backgroundColor: _C.background,
+        body: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 220),
+          child: KeyedSubtree(key: ValueKey(_active), child: _body()),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Home Content ─────────────────────────────────────────────────────────────
+class _HomeContent extends StatelessWidget {
+  final void Function(_Dest) onNavigate;
+  const _HomeContent({required this.onNavigate});
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 24),
+            _header(),
+            const SizedBox(height: 20),
+            _dailyGoalCard(),
+            const SizedBox(height: 24),
+            _sectionTitle('Continue Learning'),
+            const SizedBox(height: 12),
+            _continueLearningCard(),
+            const SizedBox(height: 24),
+            _recommendedHeader(),
+            const SizedBox(height: 12),
+            _courseCard(
+              title: 'Python Fundamentals',
+              level: 'Beginner',
+              levelColor: _C.beginnerColor,
+              hours: '24H', lessons: '48 lessons',
+              rating: '4.9', students: '45.2k students',
+            ),
+            const SizedBox(height: 10),
+            _courseCard(
+              title: 'Python Fundamentals',
+              level: 'Intermediate',
+              levelColor: _C.intermediateColor,
+              hours: '6H', lessons: '48 lessons',
+              rating: '4.8', students: '45.2k students',
+            ),
+            const SizedBox(height: 10),
+            _courseCard(
+              title: 'Python Fundamentals',
+              level: 'Advanced',
+              levelColor: _C.advancedColor,
+              hours: '24H', lessons: '48 lessons',
+              rating: '4.9', students: '45.2k students',
+            ),
+            const SizedBox(height: 30),
+          ],
         ),
       ),
     );
   }
 
   // ── Header ────────────────────────────────────────────────────────────────
-  Widget _buildHeader() {
+  Widget _header() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Column(
+          // Greeting
+          const Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'Good Evening,',
                 style: TextStyle(
                   fontSize: 14,
-                  color: AppColors.textSecondary,
+                  color: _C.textSecondary,
                   letterSpacing: 0.3,
                 ),
               ),
-              const SizedBox(height: 2),
+              SizedBox(height: 2),
               Text(
                 'Welcome, Pushkar!',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.textPrimary,
+                  color: _C.textPrimary,
                   letterSpacing: -0.5,
                 ),
               ),
             ],
           ),
-          // 3-dot menu
+
+          // 3-dot popup menu
           Container(
             width: 38,
             height: 38,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF1E252C),
-              border: Border.all(color: AppColors.cardBorder, width: 1),
+              color: _C.menuBg,
+              border: Border.all(color: _C.cardBorder, width: 1),
             ),
-            child: PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert, color: AppColors.textSecondary, size: 18),
-              color: const Color(0xFF1E252C),
+            child: PopupMenuButton<_Dest>(
+              icon: const Icon(Icons.more_vert, color: _C.textSecondary, size: 18),
+              color: _C.menuBg,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              onSelected: (value) {},
-              itemBuilder: (context) => [
-                _popupItem('Profile', Icons.person_outline),
-                _popupItem('Settings', Icons.settings_outlined),
-                _popupItem('Help', Icons.help_outline),
-                _popupItem('Logout', Icons.logout),
+              onSelected: onNavigate,
+              itemBuilder: (_) => [
+                _menuItem(_Dest.courses,  'Courses',   Icons.menu_book_outlined),
+                _menuItem(_Dest.aiTutor,  'AI Tutor',  Icons.smart_toy_outlined),
+                _menuItem(_Dest.progress, 'Progress',  Icons.bar_chart_outlined),
+                _menuItem(_Dest.profile,  'Profile',   Icons.person_outline),
               ],
             ),
           ),
@@ -143,30 +184,28 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  PopupMenuItem<String> _popupItem(String label, IconData icon) {
-    return PopupMenuItem<String>(
-      value: label,
+  PopupMenuItem<_Dest> _menuItem(_Dest value, String label, IconData icon) {
+    return PopupMenuItem<_Dest>(
+      value: value,
       child: Row(
         children: [
-          Icon(icon, color: AppColors.textSecondary, size: 16),
+          Icon(icon, color: _C.textSecondary, size: 16),
           const SizedBox(width: 10),
-          Text(label, style: const TextStyle(color: AppColors.textPrimary, fontSize: 13)),
+          Text(label, style: const TextStyle(color: _C.textPrimary, fontSize: 13)),
         ],
       ),
     );
   }
 
   // ── Daily Goal Card ───────────────────────────────────────────────────────
-  Widget _buildDailyGoalCard() {
+  Widget _dailyGoalCard() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: const Color(0xFF0F1B22),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.cyanBorder, width: 1),
-          // Top glow line
+          border: Border.all(color: _C.cyanBorder, width: 1),
           gradient: const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -181,44 +220,34 @@ class HomeScreen extends StatelessWidget {
                 Row(
                   children: [
                     Container(
-                      width: 30,
-                      height: 30,
+                      width: 30, height: 30,
                       decoration: BoxDecoration(
-                        color: AppColors.cyanDim,
+                        color: _C.cyanDim,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(Icons.timer_outlined, color: AppColors.cyan, size: 16),
+                      child: const Icon(Icons.timer_outlined, color: _C.cyan, size: 16),
                     ),
                     const SizedBox(width: 10),
                     const Text(
                       'Daily Goal',
-                      style: TextStyle(
-                        color: AppColors.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: TextStyle(color: _C.textPrimary, fontSize: 14, fontWeight: FontWeight.w500),
                     ),
                   ],
                 ),
                 const Text(
                   '70%',
-                  style: TextStyle(
-                    color: AppColors.cyan,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: TextStyle(color: _C.cyan, fontSize: 22, fontWeight: FontWeight.w800),
                 ),
               ],
             ),
             const SizedBox(height: 14),
-            // Progress bar
             ClipRRect(
               borderRadius: BorderRadius.circular(3),
-              child: LinearProgressIndicator(
+              child: const LinearProgressIndicator(
                 value: 0.70,
                 minHeight: 6,
-                backgroundColor: const Color(0xFF1A2A35),
-                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.cyan),
+                backgroundColor: Color(0xFF1A2A35),
+                valueColor: AlwaysStoppedAnimation<Color>(_C.cyan),
               ),
             ),
             const SizedBox(height: 8),
@@ -226,7 +255,7 @@ class HomeScreen extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: Text(
                 '35 min / 50 min completed',
-                style: TextStyle(color: AppColors.textMuted, fontSize: 12),
+                style: TextStyle(color: _C.textMuted, fontSize: 12),
               ),
             ),
           ],
@@ -236,36 +265,33 @@ class HomeScreen extends StatelessWidget {
   }
 
   // ── Section Title ─────────────────────────────────────────────────────────
-  Widget _buildSectionTitle(String title) {
+  Widget _sectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Text(
         title,
         style: const TextStyle(
-          color: AppColors.textPrimary,
-          fontSize: 17,
-          fontWeight: FontWeight.w700,
-          letterSpacing: -0.3,
+          color: _C.textPrimary, fontSize: 17,
+          fontWeight: FontWeight.w700, letterSpacing: -0.3,
         ),
       ),
     );
   }
 
   // ── Continue Learning Card ────────────────────────────────────────────────
-  Widget _buildContinueLearningCard() {
+  Widget _continueLearningCard() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: const Color(0xFF0D1117),
+          color: _C.darkCard,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.cardBorder, width: 1),
+          border: Border.all(color: _C.cardBorder, width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Left accent bar
             IntrinsicHeight(
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -276,40 +302,32 @@ class HomeScreen extends StatelessWidget {
                       gradient: const LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [AppColors.cyan, Color(0xFF0077B6)],
+                        colors: [_C.cyan, Color(0xFF0077B6)],
                       ),
                       borderRadius: BorderRadius.circular(3),
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Expanded(
+                  const Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Complete Python Masterclass',
                           style: TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
+                            color: _C.textPrimary, fontSize: 15, fontWeight: FontWeight.w700,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4),
                         Row(
                           children: [
-                            const Icon(Icons.book_outlined, color: AppColors.textMuted, size: 13),
-                            const SizedBox(width: 4),
-                            Text(
-                              '8 of 12 lessons',
-                              style: TextStyle(color: AppColors.textMuted, fontSize: 12),
-                            ),
-                            const SizedBox(width: 12),
-                            const Icon(Icons.access_time, color: AppColors.textMuted, size: 13),
-                            const SizedBox(width: 4),
-                            Text(
-                              '45 min left',
-                              style: TextStyle(color: AppColors.textMuted, fontSize: 12),
-                            ),
+                            Icon(Icons.book_outlined, color: _C.textMuted, size: 13),
+                            SizedBox(width: 4),
+                            Text('8 of 12 lessons', style: TextStyle(color: _C.textMuted, fontSize: 12)),
+                            SizedBox(width: 12),
+                            Icon(Icons.access_time, color: _C.textMuted, size: 13),
+                            SizedBox(width: 4),
+                            Text('45 min left', style: TextStyle(color: _C.textMuted, fontSize: 12)),
                           ],
                         ),
                       ],
@@ -321,11 +339,11 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 14),
             ClipRRect(
               borderRadius: BorderRadius.circular(3),
-              child: LinearProgressIndicator(
+              child: const LinearProgressIndicator(
                 value: 0.66,
                 minHeight: 5,
-                backgroundColor: const Color(0xFF1A2230),
-                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.cyan),
+                backgroundColor: Color(0xFF1A2230),
+                valueColor: AlwaysStoppedAnimation<Color>(_C.cyan),
               ),
             ),
             const SizedBox(height: 14),
@@ -334,21 +352,15 @@ class HomeScreen extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () {},
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.cyan,
+                  backgroundColor: _C.cyan,
                   foregroundColor: const Color(0xFF0A0C0F),
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: 0,
                 ),
                 child: const Text(
                   'Continue Learning',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.3,
-                  ),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, letterSpacing: 0.3),
                 ),
               ),
             ),
@@ -359,28 +371,22 @@ class HomeScreen extends StatelessWidget {
   }
 
   // ── Recommended Header ────────────────────────────────────────────────────
-  Widget _buildRecommendedHeader() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+  Widget _recommendedHeader() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
+          Text(
             'Recommended',
             style: TextStyle(
-              color: AppColors.textPrimary,
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              letterSpacing: -0.3,
+              color: _C.textPrimary, fontSize: 17,
+              fontWeight: FontWeight.w700, letterSpacing: -0.3,
             ),
           ),
           Text(
             'See All',
-            style: const TextStyle(
-              color: AppColors.cyan,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
+            style: TextStyle(color: _C.cyan, fontSize: 13, fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -388,7 +394,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   // ── Course Card ───────────────────────────────────────────────────────────
-  Widget _buildCourseCard({
+  Widget _courseCard({
     required String title,
     required String level,
     required Color levelColor,
@@ -402,26 +408,21 @@ class HomeScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: const Color(0xFF0D1117),
+          color: _C.darkCard,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: const Color(0xFF1A2230), width: 1),
         ),
         child: Row(
           children: [
-            // Icon
             Container(
-              width: 46,
-              height: 46,
+              width: 46, height: 46,
               decoration: BoxDecoration(
                 color: const Color(0xFF111E2E),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Center(
-                child: Text('🐍', style: TextStyle(fontSize: 22)),
-              ),
+              child: const Center(child: Text('🐍', style: TextStyle(fontSize: 22))),
             ),
             const SizedBox(width: 14),
-            // Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -429,15 +430,12 @@ class HomeScreen extends StatelessWidget {
                   Text(
                     title,
                     style: const TextStyle(
-                      color: Color(0xFFD4DDE8),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
+                      color: Color(0xFFD4DDE8), fontSize: 14, fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 5),
                   Row(
                     children: [
-                      // Level badge
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
@@ -447,40 +445,32 @@ class HomeScreen extends StatelessWidget {
                         ),
                         child: Text(
                           level,
-                          style: TextStyle(
-                            color: levelColor,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: TextStyle(color: levelColor, fontSize: 10, fontWeight: FontWeight.w600),
                         ),
                       ),
                       const SizedBox(width: 8),
-                      Icon(Icons.access_time, size: 11, color: AppColors.textMuted),
+                      const Icon(Icons.access_time, size: 11, color: _C.textMuted),
                       const SizedBox(width: 3),
-                      Text(hours, style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
+                      Text(hours, style: const TextStyle(color: _C.textMuted, fontSize: 11)),
                       const SizedBox(width: 8),
-                      Icon(Icons.menu_book_outlined, size: 11, color: AppColors.textMuted),
+                      const Icon(Icons.menu_book_outlined, size: 11, color: _C.textMuted),
                       const SizedBox(width: 3),
-                      Text(lessons, style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
+                      Text(lessons, style: const TextStyle(color: _C.textMuted, fontSize: 11)),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.star_rounded, color: AppColors.starColor, size: 13),
+                      const Icon(Icons.star_rounded, color: _C.starColor, size: 13),
                       const SizedBox(width: 3),
                       Text(
                         rating,
-                        style: const TextStyle(
-                          color: AppColors.starColor,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        style: const TextStyle(color: _C.starColor, fontSize: 11, fontWeight: FontWeight.w700),
                       ),
                       const SizedBox(width: 6),
-                      Icon(Icons.people_outline, size: 12, color: AppColors.textMuted),
+                      const Icon(Icons.people_outline, size: 12, color: _C.textMuted),
                       const SizedBox(width: 3),
-                      Text(students, style: TextStyle(color: AppColors.textMuted, fontSize: 11)),
+                      Text(students, style: const TextStyle(color: _C.textMuted, fontSize: 11)),
                     ],
                   ),
                 ],

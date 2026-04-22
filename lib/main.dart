@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Vormirex',
-      home: HomeScreen(),
+      home: SplashScreen(),
     );
   }
 }
