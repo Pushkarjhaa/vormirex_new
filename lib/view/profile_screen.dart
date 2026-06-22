@@ -5,7 +5,6 @@ import 'package:vormirex_new/controller/auth_controller.dart';
 import 'package:vormirex_new/controller/change_password_controller.dart';
 import 'package:vormirex_new/controller/profile_controller.dart';
 import 'package:vormirex_new/utils/app_colour.dart';
-import 'package:vormirex_new/utils/widget.dart';
 import 'package:vormirex_new/view/edit_profile_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -24,7 +23,6 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final AuthController authController = Get.find<AuthController>();
 
-    // Ensure ProfileController is registered
     if (!Get.isRegistered<ProfileController>()) {
       Get.put(ProfileController());
     }
@@ -32,347 +30,711 @@ class ProfileScreen extends StatelessWidget {
 
     return SafeArea(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Column(
           children: [
-            // ── Profile card ─────────────────────────────────────────────
-            AppCard(
+            // ── Header ──────────────────────────────────────────────────
+            _ProfileHeader(profileController: profileController),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const SizedBox(height: 24),
+
+                  // ── Profile Info ────────────────────────────────────────
+                  _ProfileInfo(
+                    authController: authController,
+                    profileController: profileController,
+                  ),
+
+                  const SizedBox(height: 22),
+
+                  // ── Stats Row ───────────────────────────────────────────
+                  const _StatsRow(),
+
+                  const SizedBox(height: 16),
+
+                  // ── Edit Profile + Share ────────────────────────────────
                   Row(
                     children: [
-                      Stack(
-                        children: [
-                          // ── Avatar: shows network photo if available ──
-                          Obx(() {
-                            final photoUrl =
-                                profileController.profilePhotoUrl.value;
-                            return CircleAvatar(
-                              radius: 32,
-                              backgroundColor: const Color(0xFF0D3330),
-                              backgroundImage: photoUrl.isNotEmpty
-                                  ? NetworkImage(photoUrl)
-                                  : null,
-                              child: photoUrl.isEmpty
-                                  ? Icon(
-                                      Icons.person,
-                                      color: AppColors.accentCyan,
-                                      size: 36,
-                                    )
-                                  : null,
-                            );
-                          }),
-                          Positioned(
-                            bottom: 2,
-                            right: 2,
-                            child: Container(
-                              width: 12,
-                              height: 12,
-                              decoration: BoxDecoration(
-                                color: Colors.green,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: AppColors.cardBg,
-                                  width: 2,
-                                ),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: () => Get.to(() => const EditProfileScreen()),
+                          child: Container(
+                            height: 48,
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF3CD9C3), Color(0xFF2BBFA9)],
+                                begin: Alignment.centerLeft,
+                                end: Alignment.centerRight,
                               ),
+                              borderRadius: BorderRadius.circular(28),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.edit_outlined,
+                                    color: Colors.black, size: 18),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Edit Profile',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // ── Name ──
-                            Obx(
-                              () => Text(
-                                profileController.name.value.isNotEmpty
-                                    ? profileController.name.value
-                                    : authController.userName.value.isNotEmpty
-                                    ? authController.userName.value
-                                    : 'User Name',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 3),
-                            // ── Email ──
-                            Obx(
-                              () => Text(
-                                profileController.email.value.isNotEmpty
-                                    ? profileController.email.value
-                                    : authController.userEmail.value.isNotEmpty
-                                    ? authController.userEmail.value
-                                    : 'user@gmail.com',
-                                style: const TextStyle(
-                                  color: Colors.white54,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
-                          ],
                         ),
                       ),
-                      GestureDetector(
-                        onTap: () => Get.to(() => const EditProfileScreen()),
-                        child: const Icon(
-                          Icons.edit_outlined,
-                          color: Colors.white38,
-                          size: 20,
+                      const SizedBox(width: 10),
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1A1B2E),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                              color: const Color(0xFF2A2B3D), width: 1),
+                        ),
+                        child: const Icon(Icons.share_outlined,
+                            color: Colors.white70, size: 20),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 28),
+
+                  // ── Mastered Subjects ───────────────────────────────────
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Mastered Subjects',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      Text(
+                        'View All',
+                        style: TextStyle(
+                          color: AppColors.accentCyan,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
-                  Text(
-                    '75%',
-                    style: TextStyle(
-                      color: AppColors.accentCyan,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  CyanProgressBar(value: 0.75),
-                ],
-              ),
-            ),
 
-            const SizedBox(height: 16),
+                  const SizedBox(height: 12),
 
-            // ── Stats row ────────────────────────────────────────────────
-            Row(
-              children: [
-                _StatCard(
-                  icon: Icons.local_fire_department,
-                  label: '7 Day Streak',
-                ),
-                const SizedBox(width: 10),
-                _StatCard(icon: Icons.local_fire_department, label: 'Courses'),
-                const SizedBox(width: 10),
-                _StatCard(icon: Icons.local_fire_department, label: 'Learned'),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-
-            // ── AI Personalization ───────────────────────────────────────
-            AppCard(
-              child: Row(
-                children: [
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0D3330),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Image.asset('assets/new_logo.png'),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'AI Personalization',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 3),
-                        const Text(
-                          'Learning style: Visual & Interactive',
-                          style: TextStyle(color: Colors.white54, fontSize: 12),
-                        ),
-                        const SizedBox(height: 8),
-                        const Wrap(
-                          spacing: 6,
-                          children: [
-                            _SubjectChip('Coding'),
-                            _SubjectChip('Python'),
-                            _SubjectChip('Mathematics'),
-                          ],
-                        ),
+                  SizedBox(
+                    height: 34,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: const [
+                        _SubjectChip('Quantum Physics'),
+                        SizedBox(width: 8),
+                        _SubjectChip('Advanced JS'),
+                        SizedBox(width: 8),
+                        _SubjectChip('AI Ethics'),
+                        SizedBox(width: 8),
+                        _SubjectChip('Machine Learning'),
                       ],
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white24),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text(
-                      'Edit',
-                      style: TextStyle(color: Colors.white, fontSize: 12),
+
+                  const SizedBox(height: 28),
+
+                  // ── Collectibles ────────────────────────────────────────
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Collectibles',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
-                ],
-              ),
-            ),
 
-            const SizedBox(height: 12),
+                  const SizedBox(height: 12),
 
-            // ── Settings Tiles ───────────────────────────────────────────
-            _SettingsTile(
-              icon: Icons.notifications_outlined,
-              title: 'Notifications',
-              subtitle: 'Manage Alerts',
-              trailing: CyanSwitch(value: true),
-            ),
-            const SizedBox(height: 10),
-            _SettingsTile(
-              icon: Icons.translate_outlined,
-              title: 'Language',
-              subtitle: 'App display language',
-              trailing: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.white24),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'English',
-                      style: TextStyle(color: Colors.white70, fontSize: 12),
-                    ),
-                    SizedBox(width: 4),
-                    Icon(
-                      Icons.keyboard_arrow_down,
-                      color: Colors.white38,
-                      size: 16,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            _SettingsTile(
-              icon: Icons.subscriptions_outlined,
-              title: 'Subscription',
-              subtitle: 'Pro Plan',
-              trailing: CyanSwitch(value: true),
-            ),
-            const SizedBox(height: 10),
-            _SettingsTile(
-              icon: Icons.star_outline,
-              title: 'Rate App',
-              subtitle: 'Share Your Feedback',
-              trailing: CyanSwitch(value: true),
-            ),
+                  const _CollectiblesGrid(),
 
-            const SizedBox(height: 10),
+                  const SizedBox(height: 24),
 
-            // ── Change Password ──────────────────────────────────────────
-            GestureDetector(
-              onTap: () => _showChangePasswordSheet(context),
-              child: AppCard(
-                child: Row(
-                  children: [
-                    Container(
-                      width: 42,
-                      height: 42,
+                  // ── Change Password ─────────────────────────────────────
+                  GestureDetector(
+                    onTap: () => _showChangePasswordSheet(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.accentCyan.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(10),
+                        color: const Color(0xFF1A1B2E),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                            color: const Color(0xFF2A2B3D), width: 1),
                       ),
-                      child: Icon(
-                        Icons.lock_outline,
-                        color: AppColors.accentCyan,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
                         children: [
-                          Text(
-                            'Change Password',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color:
+                                  AppColors.accentCyan.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Icon(Icons.lock_outline,
+                                color: AppColors.accentCyan, size: 20),
+                          ),
+                          const SizedBox(width: 14),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Change Password',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                                Text(
+                                  'Update your account password',
+                                  style: TextStyle(
+                                      color: Colors.white38, fontSize: 12),
+                                ),
+                              ],
                             ),
                           ),
-                          Text(
-                            'Update your account password',
-                            style: TextStyle(
-                              color: Colors.white38,
-                              fontSize: 12,
+                          const Icon(Icons.chevron_right,
+                              color: Colors.white24, size: 20),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // ── Log Out ─────────────────────────────────────────────
+                  GestureDetector(
+                    onTap: () => authController.logout(),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1A1B2E),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                            color: const Color(0xFF2A2B3D), width: 1),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.red.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(10),
                             ),
+                            child: const Icon(Icons.logout,
+                                color: Colors.red, size: 20),
+                          ),
+                          const SizedBox(width: 14),
+                          const Text(
+                            'Log Out',
+                            style: TextStyle(
+                                color: Colors.red,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600),
                           ),
                         ],
                       ),
                     ),
-                    const Icon(
-                      Icons.chevron_right,
-                      color: Colors.white24,
-                      size: 20,
-                    ),
-                  ],
-                ),
+                  ),
+
+                  const SizedBox(height: 28),
+                ],
               ),
             ),
-
-            const SizedBox(height: 10),
-
-            // ── Log Out ──────────────────────────────────────────────────
-            GestureDetector(
-              onTap: () => authController.logout(),
-              child: AppCard(
-                child: Row(
-                  children: [
-                    Container(
-                      width: 42,
-                      height: 42,
-                      decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.logout,
-                        color: Colors.red,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    const Text(
-                      'Log Out',
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 10),
           ],
         ),
       ),
     );
   }
+}
+
+// ─── Header ───────────────────────────────────────────────────────────────────
+
+class _ProfileHeader extends StatelessWidget {
+  final ProfileController profileController;
+  const _ProfileHeader({required this.profileController});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF0D2828), Color(0xFF0D0D1A)],
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.menu, color: Colors.white, size: 24),
+          const SizedBox(width: 12),
+          const Text(
+            'VORMIREX',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 2,
+            ),
+          ),
+          const Spacer(),
+          Obx(() {
+            final photoUrl = profileController.profilePhotoUrl.value;
+            return CircleAvatar(
+              radius: 18,
+              backgroundColor: const Color(0xFF0D3330),
+              backgroundImage:
+                  photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+              child: photoUrl.isEmpty
+                  ? const Icon(Icons.person,
+                      color: AppColors.accentCyan, size: 20)
+                  : null,
+            );
+          }),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Profile Info ─────────────────────────────────────────────────────────────
+
+class _ProfileInfo extends StatelessWidget {
+  final AuthController authController;
+  final ProfileController profileController;
+
+  const _ProfileInfo({
+    required this.authController,
+    required this.profileController,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        // Avatar with cyan border glow
+        Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.accentCyan, width: 2.5),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.accentCyan.withValues(alpha: 0.25),
+                blurRadius: 16,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: Obx(() {
+            final photoUrl = profileController.profilePhotoUrl.value;
+            return CircleAvatar(
+              radius: 46,
+              backgroundColor: const Color(0xFF0D3330),
+              backgroundImage:
+                  photoUrl.isNotEmpty ? NetworkImage(photoUrl) : null,
+              child: photoUrl.isEmpty
+                  ? const Icon(Icons.person,
+                      color: AppColors.accentCyan, size: 52)
+                  : null,
+            );
+          }),
+        ),
+
+        const SizedBox(height: 14),
+
+        // Name
+        Obx(() => Text(
+              profileController.name.value.isNotEmpty
+                  ? profileController.name.value
+                  : authController.userName.value.isNotEmpty
+                      ? authController.userName.value
+                      : 'User Name',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+              ),
+            )),
+
+        const SizedBox(height: 10),
+
+        // Badges
+        const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _BadgePill('PRO MEMBER'),
+            SizedBox(width: 8),
+            _BadgePill('ELITE LEARNER'),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+// ─── Stats Row ────────────────────────────────────────────────────────────────
+
+class _StatsRow extends StatelessWidget {
+  const _StatsRow();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: const [
+        _StatCard(label: 'TOTAL XP', value: '24.5k', icon: Icons.bolt),
+        SizedBox(width: 10),
+        _StatCard(
+            label: 'STREAK',
+            value: '12D',
+            icon: Icons.local_fire_department),
+        SizedBox(width: 10),
+        _StatCard(
+            label: 'GLOBAL RANK',
+            value: '#42',
+            icon: Icons.emoji_events_outlined),
+      ],
+    );
+  }
+}
+
+class _StatCard extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+
+  const _StatCard({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1B2E),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFF2A2B3D), width: 1),
+        ),
+        child: Column(
+          children: [
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white38,
+                fontSize: 9,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              value,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Icon(icon, color: AppColors.accentCyan, size: 18),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Badge Pill ───────────────────────────────────────────────────────────────
+
+class _BadgePill extends StatelessWidget {
+  final String label;
+  const _BadgePill(this.label);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+      decoration: BoxDecoration(
+        color: const Color(0xFF252535),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Colors.white60,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Subject Chip ─────────────────────────────────────────────────────────────
+
+class _SubjectChip extends StatelessWidget {
+  final String label;
+  const _SubjectChip(this.label);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1B2E),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFF2A2B3D), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: const BoxDecoration(
+              color: AppColors.accentCyan,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(color: Colors.white70, fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Collectibles Grid ────────────────────────────────────────────────────────
+
+class _CollectiblesGrid extends StatelessWidget {
+  const _CollectiblesGrid();
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.count(
+      crossAxisCount: 2,
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      childAspectRatio: 0.88,
+      children: const [
+        _AchievementCard(
+          title: 'Speed Demon',
+          description: 'Complete 10 lessons\nunder 3m',
+          color: Color(0xFF3CD9C3),
+          progress: 0.82,
+          icon: Icons.flash_on,
+        ),
+        _AchievementCard(
+          title: 'Night Owl',
+          description: 'Study 4 days after\nmidnight',
+          color: Color(0xFF4A7FD6),
+          progress: 0.5,
+          icon: Icons.nightlight_round,
+        ),
+        _AchievementCard(
+          title: 'Perfect Score',
+          description: '50 Lessons with 100%',
+          color: Color(0xFFF07A3A),
+          progress: 0.67,
+          icon: Icons.star_outline,
+          showProgressBar: true,
+          progressText: '60/90',
+          progressValue: 0.67,
+        ),
+        _AchievementCard(
+          title: 'Polymath',
+          description: 'Master 5 different\nsubjects',
+          color: Color(0xFF9B6DD6),
+          progress: 0.6,
+          icon: Icons.auto_awesome,
+          showProgressBar: true,
+          progressText: '3/5',
+          progressValue: 0.6,
+        ),
+      ],
+    );
+  }
+}
+
+// ─── Achievement Card ─────────────────────────────────────────────────────────
+
+class _AchievementCard extends StatelessWidget {
+  final String title;
+  final String description;
+  final Color color;
+  final double progress;
+  final IconData icon;
+  final bool showProgressBar;
+  final String progressText;
+  final double progressValue;
+
+  const _AchievementCard({
+    required this.title,
+    required this.description,
+    required this.color,
+    required this.progress,
+    required this.icon,
+    this.showProgressBar = false,
+    this.progressText = '',
+    this.progressValue = 0,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1B2E),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF2A2B3D), width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Circular progress with icon
+          SizedBox(
+            width: 54,
+            height: 54,
+            child: CustomPaint(
+              painter: _CircularProgressPainter(
+                progress: progress,
+                color: color,
+              ),
+              child: Center(
+                child: Icon(icon, color: color, size: 22),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          Text(
+            title,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+
+          const SizedBox(height: 4),
+
+          Expanded(
+            child: Text(
+              description,
+              style: const TextStyle(
+                color: Colors.white54,
+                fontSize: 11,
+                height: 1.4,
+              ),
+            ),
+          ),
+
+          if (showProgressBar) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: progressValue,
+                      backgroundColor: Colors.white10,
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                      minHeight: 4,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  progressText,
+                  style: TextStyle(
+                      color: color,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Circular Progress Painter ────────────────────────────────────────────────
+
+class _CircularProgressPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+
+  const _CircularProgressPainter({
+    required this.progress,
+    required this.color,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 4;
+
+    final bgPaint = Paint()
+      ..color = color.withValues(alpha: 0.15)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4;
+
+    canvas.drawCircle(center, radius, bgPaint);
+
+    final fgPaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -dartMath.pi / 2,
+      2 * dartMath.pi * progress,
+      false,
+      fgPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _CircularProgressPainter old) =>
+      old.progress != progress || old.color != color;
 }
 
 // ─── Change Password Sheet ────────────────────────────────────────────────────
@@ -433,7 +795,7 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
           Get.snackbar(
             'Success ✓',
             message,
-            backgroundColor: AppColors.accentCyan.withOpacity(0.15),
+            backgroundColor: AppColors.accentCyan.withValues(alpha: 0.15),
             colorText: AppColors.accentCyan,
             snackPosition: SnackPosition.BOTTOM,
             margin: const EdgeInsets.all(16),
@@ -457,7 +819,7 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
     Get.snackbar(
       'Error',
       message,
-      backgroundColor: Colors.red.withOpacity(0.15),
+      backgroundColor: Colors.red.withValues(alpha: 0.15),
       colorText: Colors.red,
       snackPosition: SnackPosition.BOTTOM,
       margin: const EdgeInsets.all(16),
@@ -475,10 +837,10 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
       child: Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFF0A1F1E),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          border: Border.all(color: Colors.white10),
+        decoration: const BoxDecoration(
+          color: Color(0xFF0A1F1E),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border(top: BorderSide(color: Colors.white10)),
         ),
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
@@ -500,10 +862,9 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
               const Text(
                 'Change Password',
                 style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                ),
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 4),
               const Text(
@@ -515,14 +876,16 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
                 controller: _oldCtrl,
                 label: 'Old Password',
                 obscure: _obscureOld,
-                onToggle: () => setState(() => _obscureOld = !_obscureOld),
+                onToggle: () =>
+                    setState(() => _obscureOld = !_obscureOld),
               ),
               const SizedBox(height: 14),
               _PasswordField(
                 controller: _newCtrl,
                 label: 'New Password',
                 obscure: _obscureNew,
-                onToggle: () => setState(() => _obscureNew = !_obscureNew),
+                onToggle: () =>
+                    setState(() => _obscureNew = !_obscureNew),
               ),
               const SizedBox(height: 24),
               SizedBox(
@@ -533,9 +896,8 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.accentCyan,
                     foregroundColor: Colors.black,
-                    disabledBackgroundColor: AppColors.accentCyan.withOpacity(
-                      0.4,
-                    ),
+                    disabledBackgroundColor:
+                        AppColors.accentCyan.withValues(alpha: 0.4),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -545,16 +907,12 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.black,
-                          ),
+                              strokeWidth: 2, color: Colors.black),
                         )
                       : const Text(
                           'Update Password',
                           style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                          ),
+                              fontSize: 15, fontWeight: FontWeight.w700),
                         ),
                 ),
               ),
@@ -589,9 +947,10 @@ class _PasswordField extends StatelessWidget {
       style: const TextStyle(color: Colors.white, fontSize: 14),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Colors.white38, fontSize: 13),
+        labelStyle:
+            const TextStyle(color: Colors.white38, fontSize: 13),
         filled: true,
-        fillColor: Colors.white.withOpacity(0.06),
+        fillColor: Colors.white.withValues(alpha: 0.06),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Colors.white12),
@@ -602,130 +961,21 @@ class _PasswordField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: AppColors.accentCyan, width: 1.5),
+          borderSide:
+              BorderSide(color: AppColors.accentCyan, width: 1.5),
         ),
         suffixIcon: IconButton(
           icon: Icon(
-            obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+            obscure
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
             color: Colors.white38,
             size: 20,
           ),
           onPressed: onToggle,
         ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-      ),
-    );
-  }
-}
-
-// ─── Stat Card ────────────────────────────────────────────────────────────────
-
-class _StatCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  const _StatCard({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: BoxDecoration(
-          color: const Color(0xFF0D3330),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: AppColors.accentCyan, size: 22),
-            const SizedBox(height: 6),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white60, fontSize: 11),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─── Subject Chip ─────────────────────────────────────────────────────────────
-
-class _SubjectChip extends StatelessWidget {
-  final String label;
-  const _SubjectChip(this.label);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        border: Border.all(color: AppColors.accentCyan.withOpacity(0.4)),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(color: AppColors.accentCyan, fontSize: 11),
-      ),
-    );
-  }
-}
-
-// ─── Settings Tile ────────────────────────────────────────────────────────────
-
-class _SettingsTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final Widget trailing;
-
-  const _SettingsTile({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.trailing,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      child: Row(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: Colors.white10,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: Colors.white70, size: 20),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Text(
-                  subtitle,
-                  style: const TextStyle(color: Colors.white38, fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-          trailing,
-        ],
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
     );
   }

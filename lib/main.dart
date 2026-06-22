@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:vormirex_new/view/new_home_screen.dart';
 import 'package:vormirex_new/view/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SharedPreferences.getInstance();
-  // ✅ Removed Get.put(AuthController()) — SplashScreen handles it
   runApp(const MyApp());
 }
 

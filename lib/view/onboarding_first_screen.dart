@@ -1,4 +1,15 @@
 import 'package:flutter/material.dart';
+
+// Onboarding screens are commented out — app navigates directly to AuthScreen
+
+class OnboardingFirstScreen extends StatelessWidget {
+  const OnboardingFirstScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) => const Scaffold();
+}
+
+/*
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:vormirex_new/utils/app_colour.dart';
@@ -46,7 +57,6 @@ class OnboardingFirstScreen extends StatelessWidget {
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      // Glow effect behind illustration
                       Container(
                         width: 260,
                         height: 260,
@@ -60,8 +70,6 @@ class OnboardingFirstScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-
-                      // Main illustration card
                       Image.asset("assets/onboarding_image.png"),
                     ],
                   ),
@@ -107,7 +115,6 @@ class OnboardingFirstScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
               child: Column(
                 children: [
-                  // Dot indicators
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -119,8 +126,6 @@ class OnboardingFirstScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 20),
-
-                  // Next button
                   SizedBox(
                     width: double.infinity,
                     height: 56,
@@ -148,11 +153,7 @@ class OnboardingFirstScreen extends StatelessWidget {
                             ),
                           ),
                           SizedBox(width: 8),
-                          Icon(
-                            Icons.arrow_forward,
-                            color: Colors.black,
-                            size: 20,
-                          ),
+                          Icon(Icons.arrow_forward, color: Colors.black, size: 20),
                         ],
                       ),
                     ),
@@ -184,47 +185,16 @@ class _StudentPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
-
-    // Skin tone
     const skin = Color(0xFFE8A87C);
-    // Shirt color (light green)
     const shirt = Color(0xFF7EC8A0);
-
-    // Body / torso
     paint.color = shirt;
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(20, 80, 55, 70),
-        const Radius.circular(10),
-      ),
-      paint,
-    );
-
-    // Head
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(20, 80, 55, 70), const Radius.circular(10)), paint);
     paint.color = skin;
     canvas.drawOval(Rect.fromLTWH(25, 30, 45, 52), paint);
-
-    // Hair
     paint.color = const Color(0xFF2C1810);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(23, 28, 47, 25),
-        const Radius.circular(20),
-      ),
-      paint,
-    );
-
-    // Arm resting on table
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(23, 28, 47, 25), const Radius.circular(20)), paint);
     paint.color = skin;
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(0, 110, 30, 18),
-        const Radius.circular(8),
-      ),
-      paint,
-    );
-
-    // Hand/fist at chin
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(0, 110, 30, 18), const Radius.circular(8)), paint);
     paint.color = skin;
     canvas.drawOval(Rect.fromLTWH(22, 74, 20, 18), paint);
   }
@@ -254,43 +224,20 @@ class _AIPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
-
-    // Body - purple/indigo shirt
     paint.color = const Color(0xFF6B5CE7);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(10, 85, 60, 75),
-        const Radius.circular(12),
-      ),
-      paint,
-    );
-
-    // "vormirex" text area on shirt
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(10, 85, 60, 75), const Radius.circular(12)), paint);
     paint.color = const Color(0xFF5A4BD1);
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(15, 100, 50, 14),
-        const Radius.circular(4),
-      ),
-      paint,
-    );
-
-    // Head - glowing cyan sphere
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(15, 100, 50, 14), const Radius.circular(4)), paint);
     final glowPaint = Paint()
       ..style = PaintingStyle.fill
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
     glowPaint.color = accentCyan.withOpacity(0.4);
     canvas.drawCircle(const Offset(40, 52), 34, glowPaint);
-
     paint.color = accentCyan.withOpacity(0.9);
     canvas.drawCircle(const Offset(40, 52), 26, paint);
-
-    // Face features
     paint.color = const Color(0xFF003333);
-    canvas.drawOval(Rect.fromLTWH(27, 43, 10, 14), paint); // left eye
-    canvas.drawOval(Rect.fromLTWH(43, 43, 10, 14), paint); // right eye
-
-    // Pointing arm
+    canvas.drawOval(Rect.fromLTWH(27, 43, 10, 14), paint);
+    canvas.drawOval(Rect.fromLTWH(43, 43, 10, 14), paint);
     paint.color = const Color(0xFF6B5CE7);
     final path = Path()
       ..moveTo(68, 100)
@@ -323,63 +270,19 @@ class _FloatingCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            height: 6,
-            width: 50,
-            decoration: BoxDecoration(
-              color: accentCyan.withOpacity(0.7),
-              borderRadius: BorderRadius.circular(3),
-            ),
-          ),
+          Container(height: 6, width: 50, decoration: BoxDecoration(color: accentCyan.withOpacity(0.7), borderRadius: BorderRadius.circular(3))),
           const SizedBox(height: 5),
-          Container(
-            height: 4,
-            width: 65,
-            decoration: BoxDecoration(
-              color: Colors.white24,
-              borderRadius: BorderRadius.circular(3),
-            ),
-          ),
+          Container(height: 4, width: 65, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(3))),
           const SizedBox(height: 4),
-          Container(
-            height: 4,
-            width: 55,
-            decoration: BoxDecoration(
-              color: Colors.white24,
-              borderRadius: BorderRadius.circular(3),
-            ),
-          ),
+          Container(height: 4, width: 55, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(3))),
           const SizedBox(height: 4),
-          Container(
-            height: 4,
-            width: 60,
-            decoration: BoxDecoration(
-              color: Colors.white24,
-              borderRadius: BorderRadius.circular(3),
-            ),
-          ),
+          Container(height: 4, width: 60, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(3))),
           const SizedBox(height: 6),
           Row(
             children: [
-              Container(
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: accentCyan.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Icon(Icons.person, size: 12, color: accentCyan),
-              ),
+              Container(width: 20, height: 20, decoration: BoxDecoration(color: accentCyan.withOpacity(0.2), borderRadius: BorderRadius.circular(4)), child: Icon(Icons.person, size: 12, color: accentCyan)),
               const SizedBox(width: 4),
-              Container(
-                width: 20,
-                height: 20,
-                decoration: BoxDecoration(
-                  color: accentCyan.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Icon(Icons.bar_chart, size: 12, color: accentCyan),
-              ),
+              Container(width: 20, height: 20, decoration: BoxDecoration(color: accentCyan.withOpacity(0.2), borderRadius: BorderRadius.circular(4)), child: Icon(Icons.bar_chart, size: 12, color: accentCyan)),
             ],
           ),
         ],
@@ -396,29 +299,19 @@ class _LaptopWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Screen
         Container(
           width: 130,
           height: 80,
           decoration: BoxDecoration(
             color: const Color(0xFF1E1E2E),
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(6),
-              topRight: Radius.circular(6),
-            ),
+            borderRadius: const BorderRadius.only(topLeft: Radius.circular(6), topRight: Radius.circular(6)),
             border: Border.all(color: Colors.white12, width: 1.5),
           ),
           padding: const EdgeInsets.all(6),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  _dot(Colors.red),
-                  _dot(Colors.orange),
-                  _dot(Colors.green),
-                ],
-              ),
+              Row(children: [_dot(Colors.red), _dot(Colors.orange), _dot(Colors.green)]),
               const SizedBox(height: 4),
               Container(height: 3, color: accentCyan.withOpacity(0.5)),
               const SizedBox(height: 3),
@@ -428,16 +321,12 @@ class _LaptopWidget extends StatelessWidget {
             ],
           ),
         ),
-        // Base
         Container(
           width: 150,
           height: 8,
-          decoration: BoxDecoration(
-            color: const Color(0xFF3A3A4A),
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(4),
-              bottomRight: Radius.circular(4),
-            ),
+          decoration: const BoxDecoration(
+            color: Color(0xFF3A3A4A),
+            borderRadius: BorderRadius.only(bottomLeft: Radius.circular(4), bottomRight: Radius.circular(4)),
           ),
         ),
       ],
@@ -470,3 +359,4 @@ class _Dot extends StatelessWidget {
     );
   }
 }
+*/

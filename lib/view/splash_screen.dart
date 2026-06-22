@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:vormirex_new/controller/auth_controller.dart';
 import 'package:vormirex_new/utils/app_colour.dart';
 import 'package:vormirex_new/utils/main_screen.dart';
-import 'package:vormirex_new/view/onboarding_first_screen.dart';
+import 'package:vormirex_new/view/auth/auth_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -30,7 +30,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (loggedIn) {
       Get.offAll(() => const MainScreen());
     } else {
-      Get.offAll(() => const OnboardingFirstScreen());
+      Get.offAll(() => const AuthScreen());
     }
   }
 

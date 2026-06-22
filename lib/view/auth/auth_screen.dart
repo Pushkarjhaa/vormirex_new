@@ -13,17 +13,14 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
-  // Inject AuthController
   final AuthController _authController = Get.put(AuthController());
 
   bool _isLogin = true;
 
-  // Login controllers
   final _loginEmailController = TextEditingController();
   final _loginPasswordController = TextEditingController();
   bool _loginPasswordVisible = false;
 
-  // Sign up controllers
   final _signupNameController = TextEditingController();
   final _signupEmailController = TextEditingController();
   final _signupPasswordController = TextEditingController();
@@ -46,95 +43,153 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       backgroundColor: AppColors.scaffoldBg,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             children: [
-              const SizedBox(height: 20),
+              const SizedBox(height: 28),
 
-              // Vortex Logo
-              Image.asset(
-                'assets/new_logo.png',
-                height: screenHeight * 0.15,
-                width: screenWidth * 0.3,
-              ),
-
-              const SizedBox(height: 18),
-
-              // App name
+              // App name header
               const Text(
                 'VORMIREX',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
                   letterSpacing: 3,
                 ),
               ),
 
-              const SizedBox(height: 8),
+              const SizedBox(height: 28),
 
-              // Subtitle
-              Text(
-                'Your personal AI tutor, unlocking\nyour potential.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.55),
-                  fontSize: 14,
-                  height: 1.5,
+              // Logo
+              Image.asset(
+                'assets/new_logo.png',
+                height: screenHeight * 0.09,
+                width: screenWidth * 0.2,
+              ),
+
+              const SizedBox(height: 22),
+
+              // Heading + subtitle
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: _isLogin
+                    ? _PageHeader(
+                        key: const ValueKey('login_h'),
+                        title: 'Welcome back 👋',
+                        subtitle:
+                            'Sign in to continue your AI-powered\nlearning journey.',
+                      )
+                    : _PageHeader(
+                        key: const ValueKey('signup_h'),
+                        title: 'Create Account ✨',
+                        subtitle:
+                            'Join and start your AI-powered\nlearning journey.',
+                      ),
+              ),
+
+              const SizedBox(height: 28),
+
+              // Form card
+              Container(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+                decoration: BoxDecoration(
+                  color: AppColors.cardBg,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  transitionBuilder: (child, anim) =>
+                      FadeTransition(opacity: anim, child: child),
+                  child: _isLogin
+                      ? _LoginForm(
+                          key: const ValueKey('login'),
+                          emailController: _loginEmailController,
+                          passwordController: _loginPasswordController,
+                          passwordVisible: _loginPasswordVisible,
+                          onTogglePassword: () => setState(
+                            () =>
+                                _loginPasswordVisible = !_loginPasswordVisible,
+                          ),
+                          authController: _authController,
+                        )
+                      : _SignupForm(
+                          key: const ValueKey('signup'),
+                          nameController: _signupNameController,
+                          emailController: _signupEmailController,
+                          passwordController: _signupPasswordController,
+                          confirmPasswordController:
+                              _signupConfirmPasswordController,
+                          passwordVisible: _signupPasswordVisible,
+                          confirmPasswordVisible: _signupConfirmPasswordVisible,
+                          onTogglePassword: () => setState(
+                            () => _signupPasswordVisible =
+                                !_signupPasswordVisible,
+                          ),
+                          onToggleConfirmPassword: () => setState(
+                            () => _signupConfirmPasswordVisible =
+                                !_signupConfirmPasswordVisible,
+                          ),
+                          authController: _authController,
+                          onSignupSuccess: () =>
+                              setState(() => _isLogin = true),
+                        ),
+                ),
+              ),
+
+              const SizedBox(height: 26),
+
+              // OR divider
+              const _OrDivider(),
+
+              const SizedBox(height: 20),
+
+              // Continue with Google
+              _SocialButton(label: 'Continue with Google', icon: _GoogleIcon()),
+
+              const SizedBox(height: 14),
+
+              // Continue with Apple
+              _SocialButton(
+                label: 'Continue with Apple',
+                icon: const Icon(Icons.apple, color: Colors.white, size: 22),
+              ),
+
+              const SizedBox(height: 28),
+
+              // Toggle sign in / sign up
+              GestureDetector(
+                onTap: () => setState(() => _isLogin = !_isLogin),
+                child: RichText(
+                  text: TextSpan(
+                    style: const TextStyle(fontSize: 14),
+                    children: [
+                      TextSpan(
+                        text: _isLogin
+                            ? "Don't have an account? "
+                            : 'Already have an account? ',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.55),
+                        ),
+                      ),
+                      TextSpan(
+                        text: _isLogin ? 'Sign up' : 'Sign in',
+                        style: const TextStyle(
+                          color: AppColors.accentCyan,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
               const SizedBox(height: 28),
-
-              // Tab switcher
-              _TabSwitcher(
-                isLogin: _isLogin,
-                onTabChanged: (val) => setState(() => _isLogin = val),
-              ),
-
-              const SizedBox(height: 28),
-
-              // Form
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 250),
-                transitionBuilder: (child, anim) =>
-                    FadeTransition(opacity: anim, child: child),
-                child: _isLogin
-                    ? _LoginForm(
-                        key: const ValueKey('login'),
-                        emailController: _loginEmailController,
-                        passwordController: _loginPasswordController,
-                        passwordVisible: _loginPasswordVisible,
-                        onTogglePassword: () => setState(
-                          () => _loginPasswordVisible = !_loginPasswordVisible,
-                        ),
-                        authController: _authController,
-                      )
-                    : _SignupForm(
-                        key: const ValueKey('signup'),
-                        nameController: _signupNameController,
-                        emailController: _signupEmailController,
-                        passwordController: _signupPasswordController,
-                        confirmPasswordController:
-                            _signupConfirmPasswordController,
-                        passwordVisible: _signupPasswordVisible,
-                        confirmPasswordVisible: _signupConfirmPasswordVisible,
-                        onTogglePassword: () => setState(
-                          () =>
-                              _signupPasswordVisible = !_signupPasswordVisible,
-                        ),
-                        onToggleConfirmPassword: () => setState(
-                          () => _signupConfirmPasswordVisible =
-                              !_signupConfirmPasswordVisible,
-                        ),
-                        authController: _authController,
-                        onSignupSuccess: () => setState(() => _isLogin = true),
-                      ),
-              ),
             ],
           ),
         ),
@@ -143,74 +198,37 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 }
 
-// ─── Tab Switcher ─────────────────────────────────────────────────────────────
+// ─── Page Header ──────────────────────────────────────────────────────────────
 
-class _TabSwitcher extends StatelessWidget {
-  final bool isLogin;
-  final ValueChanged<bool> onTabChanged;
+class _PageHeader extends StatelessWidget {
+  final String title;
+  final String subtitle;
 
-  const _TabSwitcher({required this.isLogin, required this.onTabChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 52,
-      decoration: BoxDecoration(
-        color: AppColors.cardBg,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        children: [
-          _Tab(
-            label: 'Log In',
-            isActive: isLogin,
-            onTap: () => onTabChanged(true),
-          ),
-          _Tab(
-            label: 'Sign Up',
-            isActive: !isLogin,
-            onTap: () => onTabChanged(false),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Tab extends StatelessWidget {
-  final String label;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  const _Tab({
-    required this.label,
-    required this.isActive,
-    required this.onTap,
-  });
+  const _PageHeader({super.key, required this.title, required this.subtitle});
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          margin: const EdgeInsets.all(5),
-          decoration: BoxDecoration(
-            color: isActive ? const Color(0xFF1A4A42) : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            label,
-            style: TextStyle(
-              color: isActive ? Colors.white : Colors.white54,
-              fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-              fontSize: 15,
-            ),
+    return Column(
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 26,
+            fontWeight: FontWeight.w700,
           ),
         ),
-      ),
+        const SizedBox(height: 8),
+        Text(
+          subtitle,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.55),
+            fontSize: 14,
+            height: 1.5,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -253,7 +271,7 @@ class _LoginForm extends StatelessWidget {
         const SizedBox(height: 8),
         _InputField(
           controller: passwordController,
-          hint: '••••••',
+          hint: '••••••••',
           prefixIcon: Icons.lock_outline,
           obscureText: !passwordVisible,
           suffixIcon: passwordVisible
@@ -262,15 +280,14 @@ class _LoginForm extends StatelessWidget {
           onSuffixTap: onTogglePassword,
         ),
 
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
 
-        // Forgot password
         Align(
           alignment: Alignment.centerRight,
           child: GestureDetector(
             onTap: () => Get.to(() => ForgotPasswordScreen()),
             child: const Text(
-              'Forgot Password ?',
+              'Forgot Password?',
               style: TextStyle(
                 color: AppColors.accentCyan,
                 fontSize: 13,
@@ -280,12 +297,11 @@ class _LoginForm extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(height: 28),
+        const SizedBox(height: 24),
 
-        // Log In button — shows loader while API call is in progress
         Obx(
-          () => _PrimaryButton(
-            label: 'Log In',
+          () => _GradientButton(
+            label: 'Sign In',
             isLoading: authController.isLoading.value,
             onTap: () => authController.login(
               email: emailController.text,
@@ -293,16 +309,6 @@ class _LoginForm extends StatelessWidget {
             ),
           ),
         ),
-
-        const SizedBox(height: 24),
-
-        _OrDivider(),
-
-        const SizedBox(height: 20),
-
-        _GoogleButton(),
-
-        const SizedBox(height: 20),
       ],
     );
   }
@@ -367,7 +373,7 @@ class _SignupForm extends StatelessWidget {
         const SizedBox(height: 8),
         _InputField(
           controller: passwordController,
-          hint: '••••••',
+          hint: '••••••••',
           prefixIcon: Icons.lock_outline,
           obscureText: !passwordVisible,
           suffixIcon: passwordVisible
@@ -382,7 +388,7 @@ class _SignupForm extends StatelessWidget {
         const SizedBox(height: 8),
         _InputField(
           controller: confirmPasswordController,
-          hint: '••••••',
+          hint: '••••••••',
           prefixIcon: Icons.lock_outline,
           obscureText: !confirmPasswordVisible,
           suffixIcon: confirmPasswordVisible
@@ -393,9 +399,8 @@ class _SignupForm extends StatelessWidget {
 
         const SizedBox(height: 28),
 
-        // Create Account button — shows loader while API call is in progress
         Obx(
-          () => _PrimaryButton(
+          () => _GradientButton(
             label: 'Create Account',
             isLoading: authController.isLoading.value,
             onTap: () async {
@@ -405,23 +410,12 @@ class _SignupForm extends StatelessWidget {
                 password: passwordController.text,
                 confirmPassword: confirmPasswordController.text,
               );
-              // Switch to login tab on success (no error means success)
               if (!authController.isLoading.value) {
                 onSignupSuccess();
               }
             },
           ),
         ),
-
-        const SizedBox(height: 24),
-
-        _OrDivider(),
-
-        const SizedBox(height: 20),
-
-        _GoogleButton(),
-
-        const SizedBox(height: 20),
       ],
     );
   }
@@ -438,7 +432,7 @@ class _FieldLabel extends StatelessWidget {
     return Text(
       text,
       style: TextStyle(
-        color: Colors.white.withOpacity(0.7),
+        color: Colors.white.withValues(alpha: 0.7),
         fontSize: 14,
         fontWeight: FontWeight.w500,
       ),
@@ -471,6 +465,7 @@ class _InputField extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.cardBg,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF363636), width: 1),
       ),
       child: TextField(
         controller: controller,
@@ -480,7 +475,7 @@ class _InputField extends StatelessWidget {
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: TextStyle(
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
             fontSize: 15,
           ),
           prefixIcon: prefixIcon != null
@@ -506,12 +501,12 @@ class _InputField extends StatelessWidget {
   }
 }
 
-class _PrimaryButton extends StatelessWidget {
+class _GradientButton extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
   final bool isLoading;
 
-  const _PrimaryButton({
+  const _GradientButton({
     required this.label,
     required this.onTap,
     this.isLoading = false,
@@ -519,102 +514,106 @@ class _PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: ElevatedButton(
-        onPressed: isLoading ? null : onTap,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.accentCyan,
-          foregroundColor: Colors.black,
-          disabledBackgroundColor: AppColors.accentCyan.withOpacity(0.6),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(32),
+    return GestureDetector(
+      onTap: isLoading ? null : onTap,
+      child: Container(
+        width: double.infinity,
+        height: 56,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isLoading
+                ? [
+                    Color(0xFF3CD9C3).withValues(alpha: 0.6),
+                    Color(0xFF2BBFA9).withValues(alpha: 0.6),
+                  ]
+                : const [Color(0xFF3CD9C3), Color(0xFF2BBFA9)],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
           ),
-          elevation: 0,
+          borderRadius: BorderRadius.circular(32),
         ),
-        child: isLoading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  color: Colors.black,
-                  strokeWidth: 2.5,
-                ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    label,
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Icon(
-                    Icons.arrow_forward,
+        child: Center(
+          child: isLoading
+              ? const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
                     color: Colors.black,
-                    size: 18,
+                    strokeWidth: 2.5,
                   ),
-                ],
-              ),
+                )
+              : Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black,
+                  ),
+                ),
+        ),
       ),
     );
   }
 }
 
 class _OrDivider extends StatelessWidget {
+  const _OrDivider();
+
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: Divider(color: Colors.white12, thickness: 1)),
+        const Expanded(child: Divider(color: Color(0xFF363636), thickness: 1)),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            'OR CONTINUE WITH',
+            'OR',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.35),
-              fontSize: 11,
+              color: Colors.white.withValues(alpha: 0.4),
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
               letterSpacing: 1,
             ),
           ),
         ),
-        Expanded(child: Divider(color: Colors.white12, thickness: 1)),
+        const Expanded(child: Divider(color: Color(0xFF363636), thickness: 1)),
       ],
     );
   }
 }
 
-class _GoogleButton extends StatelessWidget {
+class _SocialButton extends StatelessWidget {
+  final String label;
+  final Widget icon;
+
+  const _SocialButton({required this.label, required this.icon});
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 56,
-      child: ElevatedButton(
+      height: 54,
+      child: OutlinedButton(
         onPressed: () {},
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF1A4A42),
+        style: OutlinedButton.styleFrom(
+          backgroundColor: AppColors.cardBg,
+          side: const BorderSide(color: Color(0xFF363636), width: 1),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(32),
           ),
-          elevation: 0,
+          foregroundColor: Colors.white,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _GoogleIcon(),
+            icon,
             const SizedBox(width: 10),
-            const Text(
-              'Continue with Google',
-              style: TextStyle(
+            Text(
+              label,
+              style: const TextStyle(
                 color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -664,7 +663,7 @@ class _GoogleIconPainter extends CustomPainter {
     canvas.drawCircle(
       Offset(cx, cy),
       r * 0.55,
-      Paint()..color = const Color(0xFF1A4A42),
+      Paint()..color = AppColors.cardBg,
     );
   }
 
